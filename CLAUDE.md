@@ -93,42 +93,47 @@ installer from nodejs.org.
 **Vercel**: project `paneliq`, team `Maris` (slug `maris14`, id `team_Xr78UqlEIic7DxOIE5cxV0kx`),
 **hobby plan**.
 
-- **The site is behind Vercel Deployment Protection and is NOT publicly reachable.** All three
-  URL forms (`paneliq-k0hxhxbnq-maris14`, `paneliq-maris14`, `paneliq-git-main-maris14`
-  `.vercel.app`) return 302 → `vercel.com/sso-api`. Kyle's team cannot open it today without a
-  Vercel login. (`paneliq.vercel.app` with no team slug is an unrelated third-party project.)
-- **The Vercel MCP connector can see the team but not this project** — `list_projects` returns
-  `[]`, `get_project("paneliq")` 404s, `get_git_deployment_context` shows `linkedProjects: []`.
-  So Claude **cannot** read or change Root Directory, confirm the GitHub link, or read build
-  logs. Anything in the Vercel dashboard has to be checked by Kyle by hand. Don't burn time
-  re-attempting these calls; this was verified twice across two sessions. (`list_deployments`
-  was additionally blocked by the permission classifier in Session 2 — another dead end.)
-- **GitHub is NOT connected to the Vercel project — verified 2026-09-01, Session 3.** Three
-  pushes landed on `main` and produced **no deployment at all**. `get_git_deployment_context`
-  reports `linkedProjects: []`. The project was almost certainly created by a direct CLI/API
-  upload rather than a Git import, so it has no Git integration and never auto-deployed. The
-  Session 1 handoff's claim that "GitHub is linked to Vercel for auto-deploy on push" is
-  **false** — it was written from assumption and never tested. Until Kyle connects the repo (or
-  re-imports the project from Git), pushing to `main` deploys nothing.
-- **Practical workaround (only once Git is connected)**: a push to `main` is itself the deploy
-  test. After pushing, ask Kyle
-  to look at Vercel → paneliq → Deployments and report whether a build appeared and whether it
-  succeeded. That's the only feedback loop available until the connector or the CLI is fixed.
-- **Root Directory gotcha (unresolved)**: if Vercel → paneliq → Settings → General → Root
-  Directory still says `paneliq`, deploys will fail, because the app is now at the repo root.
-  Needs Kyle to check and clear it.
+- **Production URL is `https://paneliq-five.vercel.app` — public, no login wall.** Verified
+  2026-09-01 (Session 3): HTTP 200, no redirect, and `/`, `/library`, `/jobs`, `/datasheets`,
+  `/cad`, `/images` all return 200. The `-five` suffix exists because plain `paneliq.vercel.app`
+  was already taken by an unrelated project. **Use this hostname.** Do not guess at Vercel
+  hostnames — `paneliq-maris14`, `paneliq-git-main-maris14`, and the hashed per-deployment URL
+  `paneliq-k0hxhxbnq-maris14` all redirect to `vercel.com/sso-api`, which is normal Vercel
+  behaviour for non-production hosts and says nothing about the production alias.
+- **GitHub IS connected and auto-deploy works.** A push to `main` builds and deploys on its own;
+  confirmed by the Session 3 canary commit appearing live. The Vercel dashboard project card
+  shows the repo `kylemoyer07-design/Maris` and the latest commit message.
+- **Root Directory is correct** (blank / `./`) — proven by the fact that the canary built and
+  deployed successfully with the app at the repo root. The long-standing "stale Root Directory"
+  worry from Sessions 1–2 is resolved; stop carrying it forward.
+- **The Vercel MCP connector cannot see this project** — `list_projects` returns `[]`,
+  `get_project("paneliq")` 404s, and `list_deployments` is blocked by the permission classifier.
+  This is a **connector scope limitation, not evidence about the project.** Session 3 wrongly
+  treated `get_git_deployment_context`'s `linkedProjects: []` as proof that GitHub was
+  disconnected; it is not — that field does not report ordinary Git integrations. To check
+  whether a deploy landed, **`curl` the production URL and grep for something the new code
+  contains** — that works, is cheap, and needs nothing from Kyle.
 
 **Supabase**: project `ohvgevtyklbjwwyfmche` (Kyle's own account, org `iogskoevbliocztjduxf`,
 us-east-2, Postgres 17, ACTIVE_HEALTHY). The Supabase MCP connector **works fully** — reads,
 SQL, and migrations all function. Tables: `devices` (14), `jobs` (1), `ops` (4), `op_devices`
 (16), plus a `device-files` storage bucket holding **0 objects** (no real files uploaded yet).
 
-RLS is enabled on all four tables with **fully permissive** policies — verified in `pg_policies`:
-one `ALL` policy per table, role `public`, `USING true` / `WITH CHECK true`. There is no login
-on the app at all. The Vercel login wall is currently the only thing in front of it, and that
-does **not** protect the database: the Supabase URL and anon key are in `lib/supabase.ts` and
-ship in the browser bundle, so anyone who obtains them has full read/write regardless of Vercel.
-Tighten before any wider rollout, and especially before Deployment Protection is turned off.
+**SECURITY — the database is publicly readable and writable right now.** RLS is enabled on all
+four tables with **fully permissive** policies (verified in `pg_policies`: one `ALL` policy per
+table, role `public`, `USING true` / `WITH CHECK true`). The app has no login. The production
+site is public, and the Supabase URL and publishable key are hardcoded in `lib/supabase.ts` and
+ship in the browser bundle.
+
+This was **confirmed live in Session 3**, not theorised: an unauthenticated request to
+`https://ohvgevtyklbjwwyfmche.supabase.co/rest/v1/devices?select=name&limit=3` with only the
+published key returned real device rows, HTTP 200. `USING true` / `WITH CHECK true` on an `ALL`
+policy means writes and deletes are equally open. Anyone who views the page source can read,
+modify, or delete the entire catalog.
+
+Sessions 1 and 2 both recorded this as a future risk partly mitigated by a Vercel login wall.
+That was wrong — the production alias was never behind one. Treat it as a live exposure, not a
+prototype-phase note. It is item 1 in Open items for that reason.
 
 **Original pitch deck + interactive demo** (Claude Artifacts, not this codebase — reference/
 history, do not edit):
@@ -219,10 +224,11 @@ summary). Phase 1 estimate only; expected to grow.
 
 ## Open items
 
-1. **Install Node** on Kyle's Mac — blocks all local build/lint/preview verification.
-2. **Kyle to check Vercel dashboard**: Root Directory (clear it if it says `paneliq`), GitHub
-   connection, and Deployment Protection (decide: keep the login wall, or make it public — if
-   public, RLS must be tightened first).
+1. **Close the RLS hole** — see the SECURITY note above. The live site is public and the
+   database is world-writable through the published key. This outranks feature work; the longer
+   the tool is shown to the team, the more real data sits behind an open door. Minimum viable
+   fix is read-only anon policies plus writes gated behind Supabase Auth (item 5).
+2. **Install Node** on Kyle's Mac — blocks all local build/lint/preview verification.
 3. **Resolve the `part_number` blocker** (§5A) before writing any migration. Options: get real
    PNs from mechanical's BOM, or generate synthetic keys from name+station, flag them visibly in
    the UI as uncataloged, and make the migration re-runnable.
