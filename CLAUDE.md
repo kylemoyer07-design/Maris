@@ -103,7 +103,15 @@ installer from nodejs.org.
   logs. Anything in the Vercel dashboard has to be checked by Kyle by hand. Don't burn time
   re-attempting these calls; this was verified twice across two sessions. (`list_deployments`
   was additionally blocked by the permission classifier in Session 2 — another dead end.)
-- **Practical workaround**: a push to `main` is itself the deploy test. After pushing, ask Kyle
+- **GitHub is NOT connected to the Vercel project — verified 2026-09-01, Session 3.** Three
+  pushes landed on `main` and produced **no deployment at all**. `get_git_deployment_context`
+  reports `linkedProjects: []`. The project was almost certainly created by a direct CLI/API
+  upload rather than a Git import, so it has no Git integration and never auto-deployed. The
+  Session 1 handoff's claim that "GitHub is linked to Vercel for auto-deploy on push" is
+  **false** — it was written from assumption and never tested. Until Kyle connects the repo (or
+  re-imports the project from Git), pushing to `main` deploys nothing.
+- **Practical workaround (only once Git is connected)**: a push to `main` is itself the deploy
+  test. After pushing, ask Kyle
   to look at Vercel → paneliq → Deployments and report whether a build appeared and whether it
   succeeded. That's the only feedback loop available until the connector or the CLI is fixed.
 - **Root Directory gotcha (unresolved)**: if Vercel → paneliq → Settings → General → Root
