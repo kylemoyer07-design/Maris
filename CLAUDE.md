@@ -158,7 +158,37 @@ for the risk list before starting.
 The pending redesign grows this to 7 routes and splits `devices` into a `parts` library +
 per-OP named `op_devices`.
 
-## Data model (current — devices table not yet split)
+## Data model
+
+**Current shape (migration applied 2026-09-01, Session 3).** The flat `devices` table has been
+split, additively — `devices` still exists and is still read by the pages not yet rebuilt.
+
+`parts` — the library, one row per part number, no names or stations. Columns per the handoff
+spec plus three additions: `provisional_part_number` (bool), `legacy_device_id`, and
+`legacy_spec` (the original `spec` jsonb, preserved so nothing was lost). `brand` is nullable,
+unlike the spec, because no brand data exists on the real rows yet. `category` is checked
+against `sensor | pneumatic | special | robot`.
+
+`device_images` — symbol PDFs / photos, per the spec.
+
+`op_devices` — gained `part_id`, `name`, `station`, `cable_tag`, `sort_order`. This is where
+device names live now. `device_id` is still NOT NULL and still populated, keeping the old OP
+Build page working; drop it once that page is rebuilt.
+
+**Part numbers are synthetic and flagged.** All 14 devices shared the identical placeholder
+`— (mechanical BOM)`, so each got a generated `UNCAT-<STATION>-<NAME>` key with
+`provisional_part_number = true`, surfaced in the UI as an amber "Uncatalogued P/N" pill. This
+was **Kyle's decision** (option b of three). The migration is re-runnable: when mechanical's BOM
+numbers arrive, each device already has its own row to update. Result: 14 parts, 14 distinct
+part numbers, 16 OP instances linked and named, 0 rows lost.
+
+**Categorize by the part, never by the device name.** Kyle's standing rule. `Robot 1 Load Rail
+PRX` is a proximity sensor, so its part sits under `sensor` / the Electrical family; the robot
+association belongs to the OP instance where he names it. The `robot` category exists for
+hardware that genuinely is robot hardware. When a name and a part number disagree, the part
+number wins — for grouping, sorting, dedup, and file joins alike.
+
+## Legacy data model (pre-split, still live behind `parts`)
 
 `devices`: id, station, name, category (`special` | `sensor` | `pneumatic`), part_number,
 cable_number, cut_sheet_link, safety (bool), comm (bool), revision_note, std_in, std_out,
@@ -229,16 +259,21 @@ summary). Phase 1 estimate only; expected to grow.
    the tool is shown to the team, the more real data sits behind an open door. Minimum viable
    fix is read-only anon policies plus writes gated behind Supabase Auth (item 5).
 2. **Install Node** on Kyle's Mac — blocks all local build/lint/preview verification.
-3. **Resolve the `part_number` blocker** (§5A) before writing any migration. Options: get real
-   PNs from mechanical's BOM, or generate synthetic keys from name+station, flag them visibly in
-   the UI as uncataloged, and make the migration re-runnable.
-4. **Implement the redesign** in `design_handoff_paneliq/` — 7 routes, `parts`/`op_devices`/
-   `device_images` split. Build order at the end of that README, with §5 risks read first.
+3. **Finish the redesign.** Build order steps 1-3 are **done** (migration, header + tab bar,
+   `/library` hub + `/library/[family]`). Remaining: the Catalog New Part modal (step 4, which
+   replaces `components/DeviceForm.tsx`), the real `/datasheets` `/cad` `/images` screens
+   (step 5, currently stubs rendering "Not built yet"), `/jobs` with inline create (step 6), and
+   OP Build with the naming flow, steppers and rollups (step 7). Validate step 7's output
+   against OP230: 14 devices -> 1 valve bank -> 6 sheets.
+4. **Rebuild OP Build, then drop `op_devices.device_id`** and the `devices` table once nothing
+   reads them.
 5. **Real login** (Supabase Auth) + role-based permissions + login/activity audit log. Kyle's
    actual end goal; discussed at length, not started.
 6. **Catalog real part numbers** for the 14 existing devices.
-7. **Decide the `robot` category questions**: does "Robot 1 Load Rail PRX" recategorize from
-   `sensor` to `robot`? Do `special`/`robot` contribute to the sheet-count formula?
+7. **Sheet-count formula needs widening.** Kyle confirmed 2026-09-01 that `special` and `robot`
+   parts **should** feed the sheet count eventually — deferred, not declined. Today the formula
+   still counts only `pneumatic` and `sensor`. (The `robot` categorization question is settled:
+   see "Categorize by the part" above.)
 8. **Confirm the sheet-count rule generalizes** across jobs — stated as company standard, but
    only checked against OP230 so far.
 9. Write RLS policies alongside each new table as it's created, not deferred as a batch — even a
