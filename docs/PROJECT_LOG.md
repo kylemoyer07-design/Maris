@@ -11,6 +11,88 @@ The entry template is at the bottom of this file.
 
 ---
 
+## Session 3 — 2026-09-01 (Claude Code)
+
+**Goal:** Implement the Claude Design handoff and get it live on Vercel. Ended up also fixing
+two wrong beliefs about the deployment pipeline that had been carried since Session 1.
+
+**What changed:**
+
+- **Deploy canary shipped** (build-order step 2): the real Maris logo replaces the PanelIQ
+  wordmark, the five-tab bar sits under the header, and `/datasheets`, `/cad`, `/images` exist
+  as honest "Not built yet" stubs. The stubs were *required*, not cosmetic — typed routes are
+  enabled, so a `<Link>` to a nonexistent route is a compile error, not a 404.
+- **Kyle installed Node 24 / npm 11**, so local `npm run build` works. Every push after that was
+  typechecked first. No failed Vercel builds all session.
+- **Migration applied** (step 1): `parts` and `device_images` created, `op_devices` extended
+  with `part_id` / `name` / `station` / `cable_tag` / `sort_order`. Additive throughout —
+  `devices` untouched, `device_id` still NOT NULL — so the un-rebuilt pages kept working.
+  Result: 14 parts, 14 distinct part numbers, 16 OP instances linked and named, 0 rows lost.
+- **`/library` hub and `/library/[family]` rebuilt** (step 3) against the new `parts` table, with
+  shared `PartCard` / `BrandGroup` components and a `lib/parts.ts` data layer.
+- **Docs corrected twice** (see below) and `CLAUDE.md` brought current: new data model, the
+  part-number decision, the categorization rule, Node now installed.
+- **Memory:** added the categorize-by-part-number rule at Kyle's explicit request; updated the
+  role/workflow memory, which had gone stale the moment Node was installed.
+
+**Decisions made:**
+
+- **Synthetic part numbers (Kyle's option b).** Each device gets `UNCAT-<STATION>-<NAME>` with
+  `provisional_part_number = true`, shown as an amber "Uncatalogued P/N" pill. Chosen over
+  waiting for mechanical's BOM (blocks everything) or the spec's `distinct on (part_number)`
+  (collapses 14 rows into 1). Re-runnable when real numbers arrive.
+- **Three schema additions beyond the spec**, all to avoid losing information:
+  `provisional_part_number` so the placeholder state is visible rather than implied;
+  `legacy_device_id` for provenance; `legacy_spec` holding the original jsonb, since `advance` /
+  `retract` / `valveType` have no home in the new columns yet. `brand` made nullable — the spec
+  says NOT NULL but no brand data exists on the real rows.
+- **Categorize by the part, never the device name** — Kyle's standing rule, now in `CLAUDE.md`
+  and memory. `Robot 1 Load Rail PRX` stays a `sensor` because the part is a prox switch; the
+  robot association belongs to the OP instance.
+- **Phased delivery.** The full 7-screen redesign was assessed as too large for one session even
+  with a working compiler. Stopped at a clean checkpoint after step 3 rather than starting the
+  modal and dying mid-way. The additive migration is what makes stopping safe.
+- **RLS on the new tables written permissive, deliberately.** Matching the existing tables keeps
+  the app working; writing the policy explicitly rather than inheriting it keeps the hole visible.
+
+**What broke / surprised us:**
+
+- **Claude got the Vercel situation wrong, twice, and pushed a "correction" that was itself
+  wrong.** First it concluded from three unreachable hostnames plus an empty connector response
+  that the site was behind a login wall and GitHub was disconnected — and committed that to
+  `CLAUDE.md` as verified fact. Kyle's dashboard screenshot disproved it: the production alias is
+  **`paneliq-five.vercel.app`** (the `-five` because plain `paneliq.vercel.app` was taken), it is
+  public, GitHub has always been connected, auto-deploy has always worked, and Root Directory was
+  never stale. **Two root causes worth not repeating: guessing at a hostname instead of finding
+  it, and treating a connector's lack of permission as evidence about the world.** The reliable
+  check — `curl` the production URL and grep for something only the new code contains — is now
+  documented in `CLAUDE.md`.
+- **Consequence: the RLS hole was live the whole time, not mitigated.** Sessions 1 and 2 both
+  recorded the permissive policies as partly covered by a Vercel login wall that never existed on
+  production. Confirmed by an unauthenticated request returning real device rows with only the
+  published key. Promoted to Open item 1.
+- `ops.op_number` stores `"230"`, not `"OP230"` — the UI labels needed normalizing. Small, but
+  the kind of thing only real data reveals.
+- `SESSION_1_HANDOFF.md` moved from `Session Handoffs/` to the repo root mid-session, externally.
+  Git recorded the rename and it was swept into a commit before being noticed; doc pointers were
+  updated to match.
+
+**Open questions / blockers:**
+
+1. **RLS / auth** (Open item 1). The site is public and the database is world-writable through
+   the published key. Kyle confirmed he has **not shared the URL with anyone**, so today's risk
+   is obscurity-based and tolerable — but the link must not go to the team until auth exists.
+   The non-breaking fix is Supabase Auth, which was already Kyle's stated end goal.
+2. Real part numbers from mechanical's BOM, to replace the 14 `UNCAT-` keys.
+3. Sheet-count formula should eventually include `special` and `robot` — Kyle confirmed this is
+   wanted, deferred to step 7, not declined.
+
+**Next step:** build-order step 4 — the Catalog New Part modal, replacing
+`components/DeviceForm.tsx`. Then steps 5-7 (real storage screens, `/jobs` with inline create,
+OP Build). Validate step 7 against OP230: 14 devices -> 1 valve bank -> 6 sheets.
+
+---
+
 ## Session 2 — 2026-09-01 (Claude Code)
 
 **Goal:** Get a fresh Claude Code session up to speed on the project, verify the Session 1

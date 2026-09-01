@@ -84,11 +84,11 @@ workflow available — don't plan one, and don't reach for `gh` commands. Work g
 `main`, which is also what triggers the Vercel deploy. All history is on `main`; no other
 branches exist.
 
-**Local dev environment**: **Node/npm are NOT installed on Kyle's Mac** (no node, npm, brew, or
-nvm on PATH — verified). Until Node is installed there is **no way to `npm install`, build,
-lint, or run a dev server locally**, which means no local verification before pushing. Don't
-plan work that assumes a local build until this is fixed. macOS arm64 — install the LTS
-installer from nodejs.org.
+**Local dev environment**: **Node 24.20.0 / npm 11.19.0 are installed** (`/usr/local/bin`,
+official .pkg — no Homebrew, no nvm), and `node_modules` is populated. `npm run build` and
+`npm run dev` both work. **Build locally before every push** — Sessions 1-3 had no compiler and
+it made every change a gamble; that constraint is gone, so there is no excuse for shipping code
+that hasn't been typechecked. Note the shell may need `export PATH="$PATH:/usr/local/bin"`.
 
 **Vercel**: project `paneliq`, team `Maris` (slug `maris14`, id `team_Xr78UqlEIic7DxOIE5cxV0kx`),
 **hobby plan**.
