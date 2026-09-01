@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
+import TabBar from "@/components/TabBar";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "PanelIQ",
-  description: "Hardware device library and OP build tool",
+  description: "Hardware part library and OP build tool",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -23,25 +25,24 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           className="border-b-2"
           style={{ borderColor: "var(--text)", background: "var(--bg)" }}
         >
-          <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between flex-wrap gap-3">
-            <Link href="/" className="flex items-baseline gap-2">
-              <span className="display font-extrabold text-xl" style={{ letterSpacing: "-0.01em" }}>
-                Panel<span style={{ color: "var(--primary)" }}>IQ</span>
-              </span>
-              <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-                hardware device library &amp; OP build
+          <div className="max-w-6xl mx-auto flex items-center justify-between flex-wrap" style={{ padding: "12px 24px", gap: 12 }}>
+            <Link href="/library" className="flex items-center" style={{ gap: 10 }}>
+              <Image
+                src="/logo.png"
+                alt="Maris Systems Design"
+                width={449}
+                height={101}
+                priority
+                // The PNG ships with a white background; multiply drops it onto the page fill.
+                style={{ height: 30, width: "auto", mixBlendMode: "multiply" }}
+              />
+              <span style={{ fontSize: 12, color: "var(--text-muted)" }}>
+                hardware part library &amp; OP build
               </span>
             </Link>
-            <nav className="flex gap-5 text-sm font-semibold">
-              <Link href="/library" style={{ color: "var(--text)" }}>
-                Hardware Library
-              </Link>
-              <Link href="/jobs" style={{ color: "var(--text)" }}>
-                Jobs
-              </Link>
-            </nav>
           </div>
         </header>
+        <TabBar />
         <main className="flex-1">{children}</main>
       </body>
     </html>
