@@ -13,30 +13,76 @@ Kyle's stated end goal: a real, live, **multi-user** web tool his whole hardware
 uses — login required, activity tracked (who logged in, who added what), and permissions so
 only certain people can create jobs / add devices while others are read-only.
 
-## Session protocol — read this first
+## How context works here — read this first
+
+Project knowledge lives in **three layers**. Know which layer a new fact belongs in before
+writing it down; the fastest way to rot this system is to write the same fact into two layers
+and let them drift apart.
+
+| Layer | Where | Loads | Holds |
+|---|---|---|---|
+| 1. Current state | `CLAUDE.md` (this file, repo root) | **Automatically, every session** | What's true *right now*: live services, data model, business rules, conventions, open items. Kept short. |
+| 2. History | `docs/PROJECT_LOG.md` | On demand — read it at session start | *How we got here*: one entry per session, newest first. Decisions and their reasoning, what broke, what surprised us. Append-only; never rewrite past entries. |
+| 3. Working relationship | `~/.claude/projects/-Users-kylemoyer-Maris/memory/` | **Automatically, every session** | Facts about Kyle and how to work with him — not project state. Machine-local, **not in git**. |
+
+Also present: `SESSION_1_HANDOFF.md`, the long one-time briefing from the
+original Cowork session. Read on demand, not every session. It is a historical record — where it
+disagrees with this file, **this file wins**, because several of its claims were already stale
+when checked (see the Session 2 log entry).
+
+**Routing rule for anything new you learn:**
+
+- A fact about the project (schema, service state, a business rule, a convention) → update
+  **`CLAUDE.md`**, and log the *reasoning* in **`PROJECT_LOG.md`**.
+- The story of what happened this session → **`PROJECT_LOG.md`** only.
+- A fact about Kyle — his expertise, his preferences, how he wants you to work → **memory**.
+- If you're about to write the same sentence into two layers, stop and pick one.
+
+**Maintaining memory (layer 3):** before adding a memory, check whether an existing one already
+covers it and update that file instead of creating a near-duplicate. Delete memories that turn
+out to be wrong rather than layering corrections on top. Don't put project state in memory —
+that's layer 1's job, and memory doesn't travel to another machine or to Cowork/claude.ai
+sessions, so anything the team or another surface needs must live in the repo. Memories written
+so far are indexed in `MEMORY.md` in that directory.
+
+## Session protocol
 
 **At session start:** this file loads automatically. Read `docs/PROJECT_LOG.md` (newest entry
-first) to see where the last session left off. `Session Handoffs/SESSION_1_HANDOFF.md` is the
-long one-time briefing — read it on demand, not every session.
+first) to see where the last session left off. That's normally enough to start work.
 
 **When Kyle says "session ended"** (or "end session", "wrap up", or similar):
 
 1. Append a new entry to the **top** of the session log in `docs/PROJECT_LOG.md`, following the
    template at the bottom of that file. Cover: what we set out to do, what actually changed,
    decisions made *and why*, what broke or surprised us, open questions, and the single next
-   step.
+   step. The *why* is the part that can't be reconstructed later from the diff.
 2. Update the **"Current state"** and **"Open items"** sections of this file so they're accurate
    as of right now. Keep this file short — history goes in the log, not here.
-3. Commit both (and any other work), then confirm to Kyle what was written.
+3. Consider whether anything learned about *Kyle* (not the project) belongs in memory, per the
+   routing rule above.
+4. Commit everything, then tell Kyle exactly what was written.
 
 Do this while the session is still live. If the terminal closes without it, that session's
-reasoning is lost.
+reasoning is lost and the next session will read a "current state" that is quietly out of date —
+the failure mode is silent, which is what makes it dangerous.
+
+**Verify before you trust.** Prior-session claims in this repo have been wrong or stale more
+than once — the app described as "live" was behind a login wall, the design zip described as
+needing extraction was already extracted, and `CLAUDE.md` itself had been deleted from the root
+while a handoff described it as current. The Supabase MCP connector works fully, so check the
+database directly rather than quoting a document. Do the same for anything cheap to verify.
 
 ## Current state (verified 2026-09-01, Session 2)
 
 **Repo**: `kylemoyer07-design/Maris` (private). Next.js 16 App Router + TypeScript + Tailwind v4
 + Supabase. `app/`, `lib/`, `components/` sit at the true repo root (the app was once nested
 under a `paneliq/` subfolder — see the Vercel note below, this still matters).
+
+**Git / GitHub**: remote is SSH (`git@github.com:kylemoyer07-design/Maris.git`); pushes to
+`main` work and were verified in Session 2. **The `gh` CLI is not installed**, so there is no PR
+workflow available — don't plan one, and don't reach for `gh` commands. Work goes straight to
+`main`, which is also what triggers the Vercel deploy. All history is on `main`; no other
+branches exist.
 
 **Local dev environment**: **Node/npm are NOT installed on Kyle's Mac** (no node, npm, brew, or
 nvm on PATH — verified). Until Node is installed there is **no way to `npm install`, build,
@@ -55,7 +101,11 @@ installer from nodejs.org.
   `[]`, `get_project("paneliq")` 404s, `get_git_deployment_context` shows `linkedProjects: []`.
   So Claude **cannot** read or change Root Directory, confirm the GitHub link, or read build
   logs. Anything in the Vercel dashboard has to be checked by Kyle by hand. Don't burn time
-  re-attempting these calls; this was verified twice across two sessions.
+  re-attempting these calls; this was verified twice across two sessions. (`list_deployments`
+  was additionally blocked by the permission classifier in Session 2 — another dead end.)
+- **Practical workaround**: a push to `main` is itself the deploy test. After pushing, ask Kyle
+  to look at Vercel → paneliq → Deployments and report whether a build appeared and whether it
+  succeeded. That's the only feedback loop available until the connector or the CLI is fixed.
 - **Root Directory gotcha (unresolved)**: if Vercel → paneliq → Settings → General → Root
   Directory still says `paneliq`, deploys will fail, because the app is now at the repo root.
   Needs Kyle to check and clear it.

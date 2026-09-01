@@ -4,7 +4,7 @@ Append-only running history. **Newest entry first.** Written at the end of every
 session (Kyle says "session ended" → Claude writes the entry, refreshes `CLAUDE.md`, commits).
 
 `CLAUDE.md` at the repo root is the short *current state* reference and loads automatically.
-This file is the *how we got here*. `Session Handoffs/SESSION_1_HANDOFF.md` is the long
+This file is the *how we got here*. `SESSION_1_HANDOFF.md` is the long
 one-time briefing from the original Cowork session.
 
 The entry template is at the bottom of this file.
@@ -27,6 +27,21 @@ one left off.
   `SESSION_1_HANDOFF.md` — none of which had ever reached GitHub.
 - Removed the duplicate `Session Handoffs/CLAUDE.md`; its content lives at the repo root now,
   updated. Two files named `CLAUDE.md` was the exact confusion that caused the problem below.
+- Wrote the third context layer: three memory files plus `MEMORY.md` in
+  `~/.claude/projects/-Users-kylemoyer-Maris/memory/` — Kyle's role and working style, the rule
+  that controls-domain decisions are his call, and his preference for blockers-first
+  communication. Machine-local, not in git.
+- Documented the whole three-layer system in `CLAUDE.md` with an explicit routing rule for where
+  a new fact belongs, plus guidance on maintaining memory over time. Caught because neither
+  `CLAUDE.md` nor this log mentioned the memory layer existed — a future session would have
+  loaded those memories silently with nothing explaining where they came from.
+- `SESSION_1_HANDOFF.md` moved from `Session Handoffs/` to the repo root mid-session (not by
+  Claude — the folder was emptied and removed externally, most likely by Kyle tidying up). Git
+  recorded it as a rename; all pointers to the old path in `CLAUDE.md` and this file were
+  updated to match. The `Session Handoffs/` directory no longer exists.
+- Recorded two tooling facts future sessions would otherwise rediscover the hard way: the `gh`
+  CLI is not installed (no PR workflow — work goes straight to `main`), and `list_deployments`
+  on the Vercel connector is additionally blocked by the permission classifier.
 
 **Verified against the Session 1 handoff:**
 
@@ -67,6 +82,15 @@ one left off.
   total — not worth optimizing.
 - Scoped this session to a **safe first push**: docs, ignore rules, and continuity only. No app
   code, no database migration. Those are blocked on the open questions below.
+- **Memory holds the working relationship, not project state.** Deliberately kept the memory
+  files narrow — no Supabase IDs, no schema, no business rules, all of which are already in
+  `CLAUDE.md`. Duplicating project facts into memory creates two copies that drift apart, and
+  memory doesn't travel to another machine or to Cowork/claude.ai, so anything the team or
+  another surface needs has to live in the repo. The routing rule in `CLAUDE.md` exists to keep
+  this boundary from eroding.
+- **Past handoffs get verified, not quoted.** Enough of Session 1's assertions turned out stale
+  (see the table above) that "verify before you trust" is now written into `CLAUDE.md` as a
+  standing convention rather than a one-time observation.
 
 **Open questions / blockers going into Session 3:**
 
@@ -87,7 +111,7 @@ whatever the `part_number` resolution turns out to be.
 
 ## Session 1 — 2026-08-30 to 08-31 (Claude Cowork, claude.ai)
 
-> Reconstructed from `Session Handoffs/SESSION_1_HANDOFF.md` during Session 2 — this entry was
+> Reconstructed from `SESSION_1_HANDOFF.md` during Session 2 — this entry was
 > not written live, so it's a summary of that document rather than a first-hand account. The
 > handoff file itself is the authoritative record for this session.
 
