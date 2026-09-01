@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #f5f6f8;
+    color: #1b222c;
+    font-family: "IBM Plex Sans", system-ui, -apple-system, sans-serif;
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: #2e6f8e; text-decoration: none; }
+  a:hover { color: #1f4f66; text-decoration: underline; }
+  input::placeholder, textarea::placeholder { color: #5b6572; }
+</style>
+</helmet>
+
+<div style="min-height: 100vh; background: #f5f6f8; display: flex; flex-direction: column;">
+
+  <header style="border-bottom: 2px solid #1b222c; background: #f5f6f8;">
+    <div style="max-width: 1152px; margin: 0 auto; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+      <a href="#" onClick="{{ goHub }}" style="display: flex; align-items: center; gap: 10px; color: inherit; text-decoration: none;" style-hover="text-decoration: none; color: inherit;">
+        <img src="logo.png" alt="Maris Systems Design" style="height: 30px; width: auto; display: block; mix-blend-mode: multiply;">
+        <span style="font-size: 12px; color: #5b6572;">hardware part library &amp; OP build</span>
+      </a>
+    </div>
+  </header>
+
+  <nav style="background: #f5f6f8; border-bottom: 1px solid #d7dce3;">
+    <div style="max-width: 1024px; margin: 0 auto; padding: 0 24px; display: flex; gap: 4px; flex-wrap: wrap;">
+      <a href="#" onClick="{{ goHub }}" style="font-size: 13px; font-weight: 700; text-decoration: none; padding: 10px 14px; margin-bottom: -1px; border-bottom: 2px solid transparent; color: {{ tabLibraryColor }}; border-bottom-color: {{ tabLibraryRule }};" style-hover="text-decoration: none; color: #1b222c;">Hardware Library</a>
+      <a href="#" onClick="{{ goDatasheets }}" style="font-size: 13px; font-weight: 700; text-decoration: none; padding: 10px 14px; margin-bottom: -1px; border-bottom: 2px solid transparent; color: {{ tabDatasheetsColor }}; border-bottom-color: {{ tabDatasheetsRule }};" style-hover="text-decoration: none; color: #1b222c;">Datasheets &amp; Manuals</a>
+      <a href="#" onClick="{{ goCad }}" style="font-size: 13px; font-weight: 700; text-decoration: none; padding: 10px 14px; margin-bottom: -1px; border-bottom: 2px solid transparent; color: {{ tabCadColor }}; border-bottom-color: {{ tabCadRule }};" style-hover="text-decoration: none; color: #1b222c;">CAD Files</a>
+      <a href="#" onClick="{{ goImages }}" style="font-size: 13px; font-weight: 700; text-decoration: none; padding: 10px 14px; margin-bottom: -1px; border-bottom: 2px solid transparent; color: {{ tabImagesColor }}; border-bottom-color: {{ tabImagesRule }};" style-hover="text-decoration: none; color: #1b222c;">Device Images</a>
+      <a href="#" onClick="{{ goJobs }}" style="font-size: 13px; font-weight: 700; text-decoration: none; padding: 10px 14px; margin-bottom: -1px; border-bottom: 2px solid transparent; color: {{ tabJobsColor }}; border-bottom-color: {{ tabJobsRule }};" style-hover="text-decoration: none; color: #1b222c;">Jobs</a>
+    </div>
+  </nav>
+
+  <main style="flex: 1;">
+
+    <sc-if value="{{ showCatalog }}" hint-placeholder-val="{{ true }}">
+    <div style="max-width: 1024px; margin: 0 auto; padding: 32px 24px;">
+
+      <sc-if value="{{ showCrumb }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; align-items: center; gap: 8px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: #5b6572; margin-bottom: 10px;">
+          <a href="#" onClick="{{ goHub }}" style="color: #2e6f8e;">Hardware Library</a>
+          <span>/</span>
+          <span style="color: #1b222c;">{{ crumbLeaf }}</span>
+        </div>
+      </sc-if>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 4px;">
+        <h1 style="font-family: 'Archivo', system-ui, sans-serif; font-size: 24px; font-weight: 800; margin: 0; letter-spacing: -0.01em;">{{ pageTitle }}</h1>
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: #5b6572;">{{ pageMeta }}</span>
+      </div>
+      <p style="font-size: 14px; color: #5b6572; margin: 0 0 20px 0; max-width: 780px; text-wrap: pretty;">{{ pageBlurb }}</p>
+
+      <div style="display: flex; gap: 12px; margin-bottom: 20px;">
+        <input value="{{ search }}" onChange="{{ onSearch }}" placeholder="{{ searchPlaceholder }}" style="flex: 1; min-width: 0; padding: 8px 12px; border-radius: 6px; border: 1px solid #d7dce3; background: #ffffff; color: #1b222c; font-size: 14px; font-family: inherit;" style-focus="outline: 2px solid #2e6f8e; outline-offset: -1px; border-color: #2e6f8e;">
+        <button onClick="{{ onAction }}" style="border: none; border-radius: 6px; padding: 8px 16px; font-size: 14px; font-weight: 700; color: #ffffff; background: #2e6f8e; white-space: nowrap; cursor: pointer; font-family: inherit;" style-hover="background: #1f4f66;">{{ actionLabel }}</button>
+      </div>
+
+      <sc-if value="{{ showFamilies }}" hint-placeholder-val="{{ true }}">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 12px;">
+
+          <button onClick="{{ goElectrical }}" style="text-align: left; font-family: inherit; cursor: pointer; border: 1px solid #d7dce3; border-radius: 8px; padding: 14px; background: #ffffff; display: flex; flex-direction: column; gap: 8px;" style-hover="border-color: #2e6f8e;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <span style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 999px; border: 1px solid #3a93a0; color: #0d6b6e; background: #e1f0f1;">Electrical</span>
+              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: #5b6572;">{{ electricalCount }}</span>
+            </div>
+            <div style="font-family: 'Archivo', system-ui, sans-serif; font-size: 16px; font-weight: 700;">Electrical</div>
+            <sc-if value="{{ showBlurbs }}" hint-placeholder-val="{{ true }}">
+              <div style="font-size: 12px; color: #5b6572; line-height: 1.45; text-wrap: pretty;">Proximity switches, photoeyes, safety devices and comm hardware — anything on a wire.</div>
+            </sc-if>
+            <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; color: #5b6572;">{{ electricalBrands }}</div>
+            <div style="font-size: 12px; font-weight: 600; color: #2e6f8e; margin-top: 2px;">{{ electricalCta }}</div>
+          </button>
+
+          <button onClick="{{ goPneumatic }}" style="text-align: left; font-family: inherit; cursor: pointer; border: 1px solid #d7dce3; border-radius: 8px; padding: 14px; background: #ffffff; display: flex; flex-direction: column; gap: 8px;" style-hover="border-color: #2e6f8e;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <span style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 999px; border: 1px solid #7c6ba6; color: #5a4a86; background: #ece8f4;">Pneumatic / Hydraulic</span>
+              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: #5b6572;">{{ pneumaticCount }}</span>
+            </div>
+            <div style="font-family: 'Archivo', system-ui, sans-serif; font-size: 16px; font-weight: 700;">Pneumatic / Hydraulic</div>
+            <sc-if value="{{ showBlurbs }}" hint-placeholder-val="{{ true }}">
+              <div style="font-size: 12px; color: #5b6572; line-height: 1.45; text-wrap: pretty;">Cylinders, valve banks and actuators — anything on air or fluid.</div>
+            </sc-if>
+            <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; color: #5b6572;">{{ pneumaticBrands }}</div>
+            <div style="font-size: 12px; font-weight: 600; color: #2e6f8e; margin-top: 2px;">{{ pneumaticCta }}</div>
+          </button>
+
+          <button onClick="{{ goSpecial }}" style="text-align: left; font-family: inherit; cursor: pointer; border: 1px solid #d7dce3; border-radius: 8px; padding: 14px; background: #ffffff; display: flex; flex-direction: column; gap: 8px;" style-hover="border-color: #2e6f8e;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <span style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 999px; border: 1px solid #2e6f8e; color: #1f4f66; background: #e4eef2;">Special</span>
+              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: #5b6572;">{{ specialCount }}</span>
+            </div>
+            <div style="font-family: 'Archivo', system-ui, sans-serif; font-size: 16px; font-weight: 700;">Special Devices</div>
+            <sc-if value="{{ showBlurbs }}" hint-placeholder-val="{{ true }}">
+              <div style="font-size: 12px; color: #5b6572; line-height: 1.45; text-wrap: pretty;">One-off and custom builds — anything that doesn't fit the standard families.</div>
+            </sc-if>
+            <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; color: #5b6572;">{{ specialBrands }}</div>
+            <div style="font-size: 12px; font-weight: 600; color: #2e6f8e; margin-top: 2px;">{{ specialCta }}</div>
+          </button>
+
+          <button onClick="{{ goRobots }}" style="text-align: left; font-family: inherit; cursor: pointer; border: 1px solid #d7dce3; border-radius: 8px; padding: 14px; background: #ffffff; display: flex; flex-direction: column; gap: 8px;" style-hover="border-color: #2e6f8e;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+              <span style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 999px; border: 1px solid #3f8f6b; color: #2f6b4e; background: #e3f2ea;">Robots</span>
+              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: #5b6572;">{{ robotCount }}</span>
+            </div>
+            <div style="font-family: 'Archivo', system-ui, sans-serif; font-size: 16px; font-weight: 700;">Robots</div>
+            <sc-if value="{{ showBlurbs }}" hint-placeholder-val="{{ true }}">
+              <div style="font-size: 12px; color: #5b6572; line-height: 1.45; text-wrap: pretty;">Robots, EOAT and their controllers — reach, payload and I/O handshakes on file.</div>
+            </sc-if>
+            <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; color: #5b6572;">{{ robotBrands }}</div>
+            <div style="font-size: 12px; font-weight: 600; color: #2e6f8e; margin-top: 2px;">{{ robotCta }}</div>
+          </button>
+
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showDocShortcuts }}" hint-placeholder-val="{{ true }}">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; margin-top: 12px;">
+          <button onClick="{{ goDatasheets }}" style="text-align: left; font-family: inherit; cursor: pointer; border: 1px solid #d7dce3; border-radius: 8px; padding: 14px; background: #eceff3; display: flex; align-items: center; justify-content: space-between; gap: 12px;" style-hover="border-color: #2e6f8e;">
+            <div style="display: flex; flex-direction: column; gap: 3px;">
+              <span style="font-family: 'Archivo', system-ui, sans-serif; font-size: 14px; font-weight: 700;">Datasheets &amp; Manuals</span>
+              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; color: #5b6572;">{{ datasheetMeta }}</span>
+            </div>
+            <span style="font-size: 12px; font-weight: 600; color: #2e6f8e; white-space: nowrap;">Open storage →</span>
+          </button>
+          <button onClick="{{ goCad }}" style="text-align: left; font-family: inherit; cursor: pointer; border: 1px solid #d7dce3; border-radius: 8px; padding: 14px; background: #eceff3; display: flex; align-items: center; justify-content: space-between; gap: 12px;" style-hover="border-color: #2e6f8e;">
+            <div style="display: flex; flex-direction: column; gap: 3px;">
+              <span style="font-family: 'Archivo', system-ui, sans-serif; font-size: 14px; font-weight: 700;">CAD Files</span>
+              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; color: #5b6572;">{{ cadMeta }}</span>
+            </div>
+            <span style="font-size: 12px; font-weight: 600; color: #2e6f8e; white-space: nowrap;">Open storage →</span>
+          </button>
+          <button onClick="{{ goImages }}" style="text-align: left; font-family: inherit; cursor: pointer; border: 1px solid #d7dce3; border-radius: 8px; padding: 14px; background: #eceff3; display: flex; align-items: center; justify-content: space-between; gap: 12px;" style-hover="border-color: #2e6f8e;">
+            <div style="display: flex; flex-direction: column; gap: 3px;">
+              <span style="font-family: 'Archivo', system-ui, sans-serif; font-size: 14px; font-weight: 700;">Device Images</span>
+              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; color: #5b6572;">{{ imagesMeta }}</span>
+            </div>
+            <span style="font-size: 12px; font-weight: 600; color: #2e6f8e; white-space: nowrap;">Open storage →</span>
+          </button>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showFamilyFilter }}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 16px;">
+          <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.025em; color: #5b6572; margin-right: 4px;">Family</span>
+          <sc-for list="{{ filters }}" as="ft" hint-placeholder-count="5">
+            <button onClick="{{ ft.select }}" style="font-family: inherit; font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px; cursor: pointer; border: 1px solid {{ ft.border }}; background: {{ ft.bg }}; color: {{ ft.color }};" style-hover="border-color: #2e6f8e;">{{ ft.label }}</button>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ showImageGrid }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <input type="file" multiple="true" accept="image/*,.pdf" ref="{{ imageInputRef }}" onChange="{{ onImageUpload }}" style="display: none;">
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(205px, 1fr)); gap: 12px;">
+            <sc-for list="{{ imageTiles }}" as="im" hint-placeholder-count="4">
+              <div style="border: 1px solid #d7dce3; border-radius: 8px; background: #ffffff; padding: 10px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="aspect-ratio: 4 / 3; border: 1px solid #d7dce3; border-radius: 6px; background: #eceff3; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                  {{ im.preview }}
+                  <sc-if value="{{ im.noPreview }}" hint-placeholder-val="{{ true }}">
+                    <div style="text-align: center; padding: 8px;">
+                      <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 15px; font-weight: 600; color: #1b222c; letter-spacing: 0.02em;">{{ im.symbol }}</div>
+                      <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10px; color: #5b6572; margin-top: 4px;">{{ im.kind }}</div>
+                    </div>
+                  </sc-if>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 3px;">
+                  <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; font-weight: 600; word-break: break-all;">{{ im.name }}</span>
+                  <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; color: #5b6572;">{{ im.meta }}</span>
+                </div>
+                <div style="display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; color: #5b6572;">
+                  <sc-for list="{{ im.parts }}" as="lp" hint-placeholder-count="1">
+                    <a href="#" onClick="{{ lp.open }}" style="color: #2e6f8e; font-weight: 600;">{{ lp.label }}</a>
+                  </sc-for>
+                  <sc-if value="{{ im.unlinked }}" hint-placeholder-val="{{ false }}">
+                    <span>Not linked to a part yet</span>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+          <sc-if value="{{ noImages }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size: 14px; border: 1px solid #d7dce3; border-radius: 8px; padding: 24px; text-align: center; color: #5b6572; background: #ffffff;">No device images yet — upload the symbol PDFs or images you drop into the build sheet.</div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+        <div style="font-size: 14px; border: 1px solid #d7dce3; border-radius: 8px; padding: 24px; text-align: center; color: #5b6572; background: #ffffff;">{{ emptyMessage }}</div>
+      </sc-if>
+
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <sc-for list="{{ brandGroups }}" as="g" hint-placeholder-count="3">
+          <div>
+            <button onClick="{{ g.toggle }}" style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border: none; border-bottom: 1px solid #d7dce3; background: none; text-align: left; cursor: pointer; font-family: inherit;">
+              <span style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.025em; color: #5b6572;">{{ g.brand }}</span>
+              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: #5b6572;">{{ g.count }}</span>
+            </button>
+            <sc-if value="{{ g.open }}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; flex-direction: column; gap: 8px; padding: 8px 0;">
+                <sc-for list="{{ g.parts }}" as="p" hint-placeholder-count="3">
+                  <div style="border: 1px solid #d7dce3; border-radius: 8px; padding: 12px; background: #ffffff;">
+                    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                      <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 14px; font-weight: 600;">{{ p.pn }}</span>
+                      <sc-if value="{{ p.isSensor }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 999px; border: 1px solid #3a93a0; color: #0d6b6e; background: #e1f0f1;">Electrical</span>
+                      </sc-if>
+                      <sc-if value="{{ p.isPneumatic }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 999px; border: 1px solid #7c6ba6; color: #5a4a86; background: #ece8f4;">Pneumatic / Hydraulic</span>
+                      </sc-if>
+                      <sc-if value="{{ p.isSpecial }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 999px; border: 1px solid #2e6f8e; color: #1f4f66; background: #e4eef2;">Special</span>
+                      </sc-if>
+                      <sc-if value="{{ p.isRobot }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 999px; border: 1px solid #3f8f6b; color: #2f6b4e; background: #e3f2ea;">Robot</span>
+                      </sc-if>
+                      <sc-if value="{{ p.isSafety }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 999px; border: 1px solid #e8a33d; color: #7a4b04; background: #fbeed8;">Safety</span>
+                      </sc-if>
+                      <sc-if value="{{ p.isComm }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 999px; border: 1px solid #2e6f8e; color: #1f4f66; background: #e4eef2;">Comm</span>
+                      </sc-if>
+                    </div>
+                    <div style="font-size: 13px; font-weight: 700; margin-top: 5px;">{{ p.brand }} <span style="font-weight: 400; color: #5b6572;">{{ p.type }}</span></div>
+                    <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; margin-top: 4px; color: #5b6572;">{{ p.specLine }}</div>
+                    <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; margin-top: 2px; color: #5b6572;">I/O: {{ p.io }}{{ p.usedLine }}</div>
+                    <div style="display: flex; gap: 16px; margin-top: 8px; font-size: 12px; font-weight: 600; flex-wrap: wrap;">
+                      <a href="#" onClick="{{ p.openDatasheet }}" style="color: #2e6f8e;">Datasheet</a>
+                      <sc-if value="{{ p.hasCad }}" hint-placeholder-val="{{ true }}">
+                        <a href="#" onClick="{{ p.openCad }}" style="color: #2e6f8e;">CAD file</a>
+                      </sc-if>
+                      <sc-if value="{{ p.noCad }}" hint-placeholder-val="{{ false }}">
+                        <span style="color: #5b6572;">No CAD file on file</span>
+                      </sc-if>
+                      <sc-if value="{{ p.hasImage }}" hint-placeholder-val="{{ false }}">
+                        <a href="#" onClick="{{ p.openImage }}" style="color: #2e6f8e;">Symbol: {{ p.imageSymbol }}</a>
+                      </sc-if>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <sc-for list="{{ fileGroups }}" as="fg" hint-placeholder-count="3">
+          <div>
+            <button onClick="{{ fg.toggle }}" style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border: none; border-bottom: 1px solid #d7dce3; background: none; text-align: left; cursor: pointer; font-family: inherit;">
+              <span style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.025em; color: #5b6572;">{{ fg.label }}</span>
+              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: #5b6572;">{{ fg.count }}</span>
+            </button>
+            <sc-if value="{{ fg.open }}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; flex-direction: column; gap: 8px; padding: 8px 0;">
+                <sc-for list="{{ fg.files }}" as="fl" hint-placeholder-count="3">
+                  <div style="border: 1px solid #d7dce3; border-radius: 8px; padding: 12px; background: #ffffff; display: flex; gap: 16px; align-items: flex-start; justify-content: space-between; flex-wrap: wrap;">
+                    <div style="min-width: 0; display: flex; flex-direction: column; gap: 5px;">
+                      <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600; color: #1b222c;">{{ fl.filename }}</span>
+                        <sc-if value="{{ fl.isSensor }}" hint-placeholder-val="{{ false }}">
+                          <span style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 999px; border: 1px solid #3a93a0; color: #0d6b6e; background: #e1f0f1;">Electrical</span>
+                        </sc-if>
+                        <sc-if value="{{ fl.isPneumatic }}" hint-placeholder-val="{{ false }}">
+                          <span style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 999px; border: 1px solid #7c6ba6; color: #5a4a86; background: #ece8f4;">Pneumatic / Hydraulic</span>
+                        </sc-if>
+                        <sc-if value="{{ fl.isSpecial }}" hint-placeholder-val="{{ false }}">
+                          <span style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 999px; border: 1px solid #2e6f8e; color: #1f4f66; background: #e4eef2;">Special</span>
+                        </sc-if>
+                        <sc-if value="{{ fl.isRobot }}" hint-placeholder-val="{{ false }}">
+                          <span style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 999px; border: 1px solid #3f8f6b; color: #2f6b4e; background: #e3f2ea;">Robot</span>
+                        </sc-if>
+                        <sc-if value="{{ fl.missing }}" hint-placeholder-val="{{ false }}">
+                          <span style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 999px; border: 1px solid #e8a33d; color: #7a4b04; background: #fbeed8;">Missing</span>
+                        </sc-if>
+                      </div>
+                      <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: #5b6572;">{{ fl.meta }}</div>
+                      <div style="display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; font-size: 12px; color: #5b6572;">
+                        <span>{{ fl.usedLabel }}</span>
+                        <sc-for list="{{ fl.uses }}" as="u" hint-placeholder-count="1">
+                          <a href="#" onClick="{{ u.open }}" style="color: #2e6f8e; font-weight: 600; font-family: 'IBM Plex Mono', ui-monospace, monospace;">{{ u.label }}</a>
+                        </sc-for>
+                      </div>
+                    </div>
+                    <div style="display: flex; gap: 14px; font-size: 12px; font-weight: 600; white-space: nowrap;">
+                      <sc-if value="{{ fl.present }}" hint-placeholder-val="{{ true }}">
+                        <a href="#" style="color: #2e6f8e;">{{ fl.openLabel }}</a>
+                      </sc-if>
+                      <sc-if value="{{ fl.present }}" hint-placeholder-val="{{ true }}">
+                        <a href="#" style="color: #2e6f8e;">Download</a>
+                      </sc-if>
+                      <sc-if value="{{ fl.missing }}" hint-placeholder-val="{{ false }}">
+                        <a href="#" style="color: #7a4b04;">Upload file</a>
+                      </sc-if>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ showJobsIndex }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width: 1150px; margin: 0 auto; padding: 32px 24px;">
+
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 4px;">
+        <h1 style="font-family: 'Archivo', system-ui, sans-serif; font-size: 24px; font-weight: 800; margin: 0; letter-spacing: -0.01em;">Jobs &amp; OPs</h1>
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: #5b6572;">{{ jobsMeta }}</span>
+      </div>
+      <p style="font-size: 14px; color: #5b6572; margin: 0 0 20px 0;">Each OP pulls its parts from the shared Hardware Library and names them here.</p>
+
+      <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <button onClick="{{ openNewJob }}" style="border: none; border-radius: 6px; padding: 8px 16px; font-size: 14px; font-weight: 700; color: #ffffff; background: #2e6f8e; cursor: pointer; font-family: inherit;" style-hover="background: #1f4f66;">+ New Job</button>
+      </div>
+
+      <sc-if value="{{ newJobOpen }}" hint-placeholder-val="{{ false }}">
+        <div style="border: 1px solid #2e6f8e; border-radius: 8px; background: #ffffff; padding: 14px; margin-bottom: 12px;">
+          <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #1f4f66; margin-bottom: 8px;">New job</div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+            <input value="{{ newJobNumber }}" onChange="{{ onNewJobNumber }}" placeholder="Job number (e.g. 26840)" style="width: 200px; padding: 7px 10px; border-radius: 6px; border: 1px solid #d7dce3; background: #eceff3; color: #1b222c; font-size: 13px; font-family: 'IBM Plex Mono', ui-monospace, monospace;" style-focus="outline: 2px solid #2e6f8e; outline-offset: -1px; border-color: #2e6f8e;">
+            <input value="{{ newJobName }}" onChange="{{ onNewJobName }}" placeholder="Job name (e.g. Genie Baltic Rail Assembly)" style="flex: 1; min-width: 240px; padding: 7px 10px; border-radius: 6px; border: 1px solid #d7dce3; background: #eceff3; color: #1b222c; font-size: 13px; font-family: inherit;" style-focus="outline: 2px solid #2e6f8e; outline-offset: -1px; border-color: #2e6f8e;">
+            <button onClick="{{ saveJob }}" style="border: none; border-radius: 6px; padding: 7px 14px; font-size: 13px; font-weight: 700; color: #ffffff; background: #2e6f8e; cursor: pointer; font-family: inherit;" style-hover="background: #1f4f66;">Create job</button>
+            <button onClick="{{ cancelJob }}" style="border: none; background: none; padding: 7px 6px; font-size: 13px; font-weight: 600; color: #5b6572; cursor: pointer; font-family: inherit;" style-hover="color: #1b222c;">Cancel</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <sc-for list="{{ jobList }}" as="j" hint-placeholder-count="1">
+          <div style="border: 1px solid #d7dce3; border-radius: 8px; background: #ffffff; padding: 16px;">
+            <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+              <div style="display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;">
+                <span style="font-size: 14px; font-weight: 700;">{{ j.name }}</span>
+                <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; color: #5b6572;">({{ j.number }})</span>
+              </div>
+              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: #5b6572;">{{ j.opMeta }}</span>
+            </div>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 12px;">
+              <sc-for list="{{ j.ops }}" as="op" hint-placeholder-count="4">
+                <button onClick="{{ op.open }}" style="border: 1px solid #d7dce3; border-radius: 6px; background: #eceff3; padding: 9px 14px; font-size: 13px; font-weight: 700; color: #1b222c; cursor: pointer; font-family: inherit;" style-hover="border-color: #2e6f8e; background: #e4eef2;">{{ op.label }}</button>
+              </sc-for>
+              <button onClick="{{ j.addOp }}" style="border: 1px dashed #d7dce3; border-radius: 6px; background: none; padding: 9px 14px; font-size: 13px; font-weight: 700; color: #2e6f8e; cursor: pointer; font-family: inherit;" style-hover="border-color: #2e6f8e; background: #e4eef2;">+ Add OP</button>
+            </div>
+            <sc-if value="{{ j.formOpen }}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 12px; padding-top: 12px; border-top: 1px solid #eceff3;">
+                <input value="{{ newOpNumber }}" onChange="{{ onNewOpNumber }}" placeholder="OP number (e.g. OP240)" style="width: 170px; padding: 7px 10px; border-radius: 6px; border: 1px solid #d7dce3; background: #eceff3; color: #1b222c; font-size: 13px; font-family: 'IBM Plex Mono', ui-monospace, monospace;" style-focus="outline: 2px solid #2e6f8e; outline-offset: -1px; border-color: #2e6f8e;">
+                <input value="{{ newOpName }}" onChange="{{ onNewOpName }}" placeholder="OP name (e.g. Genie OP240 — Lift Table)" style="flex: 1; min-width: 240px; padding: 7px 10px; border-radius: 6px; border: 1px solid #d7dce3; background: #eceff3; color: #1b222c; font-size: 13px; font-family: inherit;" style-focus="outline: 2px solid #2e6f8e; outline-offset: -1px; border-color: #2e6f8e;">
+                <button onClick="{{ saveOp }}" style="border: none; border-radius: 6px; padding: 7px 14px; font-size: 13px; font-weight: 700; color: #ffffff; background: #2e6f8e; cursor: pointer; font-family: inherit;" style-hover="background: #1f4f66;">Add OP</button>
+                <button onClick="{{ cancelOp }}" style="border: none; background: none; padding: 7px 6px; font-size: 13px; font-weight: 600; color: #5b6572; cursor: pointer; font-family: inherit;" style-hover="color: #1b222c;">Cancel</button>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ showOpBuild }}" hint-placeholder-val="{{ false }}">
+    <div style="max-width: 1150px; margin: 0 auto; padding: 32px 24px;">
+
+      <div style="display: flex; align-items: center; gap: 8px; font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: #5b6572; margin-bottom: 10px; flex-wrap: wrap;">
+        <a href="#" onClick="{{ goJobs }}" style="color: #2e6f8e;">Jobs &amp; OPs</a>
+        <span>/</span>
+        <span>{{ opJobLabel }}</span>
+        <span>/</span>
+        <span style="color: #1b222c;">{{ opNumber }}</span>
+      </div>
+
+      <div style="display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 4px;">
+        <h1 style="font-family: 'Archivo', system-ui, sans-serif; font-size: 24px; font-weight: 800; margin: 0; letter-spacing: -0.01em;">{{ opTitle }}</h1>
+        <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: #5b6572;">{{ opTag }}</span>
+      </div>
+      <p style="font-size: 14px; color: #5b6572; margin: 0 0 20px 0;">Pull a part from the shared library, then name it for this OP — station, device name and cable tag live here, not in the library.</p>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start;">
+
+        <div style="border: 1px solid #d7dce3; border-radius: 8px; background: #ffffff;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-bottom: 1px solid #d7dce3;">
+            <span style="font-family: 'Archivo', system-ui, sans-serif; font-size: 15px; font-weight: 700;">Hardware Library</span>
+            <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: #5b6572;">{{ libCount }}</span>
+          </div>
+          <div style="padding: 12px 14px;">
+            <input value="{{ jobSearch }}" onChange="{{ onJobSearch }}" placeholder="Search by part number, brand, or type…" style="width: 100%; box-sizing: border-box; padding: 7px 10px; border-radius: 6px; border: 1px solid #d7dce3; background: #eceff3; color: #1b222c; font-size: 13px; font-family: inherit;" style-focus="outline: 2px solid #2e6f8e; outline-offset: -1px; border-color: #2e6f8e;">
+          </div>
+          <div style="max-height: 520px; overflow-y: auto; padding: 0 14px 12px 14px; display: flex; flex-direction: column;">
+            <sc-for list="{{ libRows }}" as="r" hint-placeholder-count="6">
+              <div style="padding: 9px 0; border-bottom: 1px solid #eceff3;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                  <div style="min-width: 0;">
+                    <div style="display: flex; align-items: center; gap: 7px; flex-wrap: wrap;">
+                      <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; font-weight: 600;">{{ r.pn }}</span>
+                      <sc-if value="{{ r.isSensor }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 999px; border: 1px solid #3a93a0; color: #0d6b6e; background: #e1f0f1;">Electrical</span>
+                      </sc-if>
+                      <sc-if value="{{ r.isPneumatic }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 999px; border: 1px solid #7c6ba6; color: #5a4a86; background: #ece8f4;">Pneumatic</span>
+                      </sc-if>
+                      <sc-if value="{{ r.isSpecial }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 999px; border: 1px solid #2e6f8e; color: #1f4f66; background: #e4eef2;">Special</span>
+                      </sc-if>
+                      <sc-if value="{{ r.isRobot }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 999px; border: 1px solid #3f8f6b; color: #2f6b4e; background: #e3f2ea;">Robot</span>
+                      </sc-if>
+                    </div>
+                    <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; color: #5b6572; margin-top: 3px;">{{ r.meta }}</div>
+                  </div>
+                  <button onClick="{{ r.add }}" style="border: none; border-radius: 5px; padding: 5px 10px; font-size: 12px; font-weight: 700; color: #ffffff; background: #2e6f8e; cursor: pointer; font-family: inherit; white-space: nowrap;" style-hover="background: #1f4f66;">+ Add</button>
+                </div>
+                <sc-if value="{{ r.adding }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top: 9px; padding: 10px; border: 1px solid #2e6f8e; border-radius: 6px; background: #e4eef2; display: flex; flex-direction: column; gap: 7px;">
+                    <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #1f4f66;">Name this device for {{ opNumber }}</div>
+                    <input value="{{ addName }}" onChange="{{ onAddName }}" placeholder="Device name (e.g. Tick Tock #2 Part Present)" style="width: 100%; box-sizing: border-box; padding: 7px 9px; border-radius: 5px; border: 1px solid #d7dce3; background: #ffffff; color: #1b222c; font-size: 12px; font-family: inherit;" style-focus="outline: 2px solid #2e6f8e; outline-offset: -1px; border-color: #2e6f8e;">
+                    <div style="display: flex; gap: 7px;">
+                      <input value="{{ addStation }}" onChange="{{ onAddStation }}" placeholder="Station / assembly" style="flex: 1; min-width: 0; padding: 7px 9px; border-radius: 5px; border: 1px solid #d7dce3; background: #ffffff; color: #1b222c; font-size: 12px; font-family: inherit;" style-focus="outline: 2px solid #2e6f8e; outline-offset: -1px; border-color: #2e6f8e;">
+                      <input value="{{ addCable }}" onChange="{{ onAddCable }}" placeholder="Cable tag" style="width: 110px; padding: 7px 9px; border-radius: 5px; border: 1px solid #d7dce3; background: #ffffff; color: #1b222c; font-size: 12px; font-family: 'IBM Plex Mono', ui-monospace, monospace;" style-focus="outline: 2px solid #2e6f8e; outline-offset: -1px; border-color: #2e6f8e;">
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                      <button onClick="{{ confirmAdd }}" style="border: none; border-radius: 5px; padding: 6px 12px; font-size: 12px; font-weight: 700; color: #ffffff; background: #2e6f8e; cursor: pointer; font-family: inherit;" style-hover="background: #1f4f66;">Add to OP</button>
+                      <button onClick="{{ cancelAdd }}" style="border: none; background: none; padding: 6px 4px; font-size: 12px; font-weight: 600; color: #5b6572; cursor: pointer; font-family: inherit;" style-hover="color: #1b222c;">Cancel</button>
+                      <span style="font-size: 11px; color: #5b6572;">{{ addHint }}</span>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+            <sc-if value="{{ libEmpty }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size: 13px; color: #5b6572; padding: 18px 0; text-align: center; text-wrap: pretty;">{{ libEmptyMessage }}</div>
+            </sc-if>
+          </div>
+        </div>
+
+        <div style="border: 1px solid #d7dce3; border-radius: 8px; background: #ffffff;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-bottom: 1px solid #d7dce3;">
+            <span style="font-family: 'Archivo', system-ui, sans-serif; font-size: 15px; font-weight: 700;">{{ buildPanelTitle }}</span>
+            <div style="display: flex; align-items: center; gap: 12px;">
+              <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; color: #5b6572;">{{ buildCount }}</span>
+              <sc-if value="{{ hasBuild }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ clearBuild }}" style="border: 1px solid #d7dce3; border-radius: 5px; background: #eceff3; padding: 4px 10px; font-size: 12px; font-weight: 700; color: #5b6572; cursor: pointer; font-family: inherit; white-space: nowrap;" style-hover="border-color: #c1503a; color: #c1503a; background: #f7e4df;">Clear all</button>
+              </sc-if>
+            </div>
+          </div>
+
+          <div style="padding: 4px 14px 12px 14px; display: flex; flex-direction: column;">
+            <sc-for list="{{ buildRows }}" as="b" hint-placeholder-count="8">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 0; border-bottom: 1px solid #eceff3;">
+                <div style="min-width: 0;">
+                  <div style="font-size: 13px; font-weight: 700;">{{ b.name }}</div>
+                  <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 11px; color: #5b6572; margin-top: 3px;">{{ b.meta }}</div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <button onClick="{{ b.dec }}" style="width: 24px; height: 24px; border: 1px solid #d7dce3; border-radius: 5px; background: #eceff3; color: #1b222c; font-size: 13px; line-height: 1; cursor: pointer; font-family: inherit;" style-hover="border-color: #2e6f8e; background: #e4eef2;">−</button>
+                  <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 13px; min-width: 18px; text-align: center;">{{ b.qty }}</span>
+                  <button onClick="{{ b.inc }}" style="width: 24px; height: 24px; border: 1px solid #d7dce3; border-radius: 5px; background: #eceff3; color: #1b222c; font-size: 13px; line-height: 1; cursor: pointer; font-family: inherit;" style-hover="border-color: #2e6f8e; background: #e4eef2;">+</button>
+                  <button onClick="{{ b.remove }}" style="width: 22px; height: 24px; border: none; background: none; color: #5b6572; font-size: 13px; line-height: 1; cursor: pointer; font-family: inherit;" style-hover="color: #c1503a;">×</button>
+                </div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ buildEmpty }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size: 13px; color: #5b6572; padding: 18px 0; text-align: center;">Nothing added yet — pick a part from the library and name it.</div>
+            </sc-if>
+          </div>
+
+          <div style="padding: 0 14px 14px 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div style="border: 1px solid #d7dce3; border-radius: 6px; background: #eceff3; padding: 10px 12px;">
+              <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #5b6572;">Std inputs</div>
+              <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 20px; font-weight: 600; margin-top: 3px;">{{ stdIn }}</div>
+            </div>
+            <div style="border: 1px solid #d7dce3; border-radius: 6px; background: #eceff3; padding: 10px 12px;">
+              <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #5b6572;">Std outputs</div>
+              <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 20px; font-weight: 600; margin-top: 3px;">{{ stdOut }}</div>
+            </div>
+            <div style="border: 1px solid #d7dce3; border-radius: 6px; background: #eceff3; padding: 10px 12px;">
+              <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #5b6572;">Safety inputs</div>
+              <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 20px; font-weight: 600; margin-top: 3px; color: #7a4b04;">{{ safeIn }}</div>
+            </div>
+            <div style="border: 1px solid #d7dce3; border-radius: 6px; background: #eceff3; padding: 10px 12px;">
+              <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #5b6572;">Safety outputs</div>
+              <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 20px; font-weight: 600; margin-top: 3px; color: #7a4b04;">{{ safeOut }}</div>
+            </div>
+          </div>
+
+          <div style="margin: 0 14px 14px 14px; border: 1px solid #2e6f8e; border-radius: 8px; background: #e4eef2; padding: 14px;">
+            <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #1f4f66;">Estimated controls sheet count</div>
+            <div style="font-family: 'Archivo', system-ui, sans-serif; font-size: 20px; font-weight: 800; margin-top: 5px; letter-spacing: -0.01em;">{{ sheetHeadline }}</div>
+            <div style="font-size: 12px; color: #5b6572; margin-top: 5px; line-height: 1.5; text-wrap: pretty;">{{ sheetSupport }}</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    </sc-if>
+  </main>
+
+  <sc-if value="{{ modalOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; background: rgba(27, 34, 44, 0.45); display: flex; align-items: flex-start; justify-content: center; padding: 28px 20px; overflow-y: auto; z-index: 60;">
+      <div style="width: 100%; max-width: 780px; max-height: calc(100vh - 56px); background: #ffffff; border: 1px solid #d7dce3; border-radius: 10px; display: flex; flex-direction: column; overflow: hidden;">
+
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; border-bottom: 1px solid #d7dce3; flex-shrink: 0;">
+          <span style="font-family: 'Archivo', system-ui, sans-serif; font-size: 18px; font-weight: 800; letter-spacing: -0.01em;">Catalog New Part</span>
+          <button onClick="{{ closeModal }}" style="border: none; background: none; font-size: 18px; line-height: 1; color: #5b6572; cursor: pointer; font-family: inherit; padding: 2px 4px;" style-hover="color: #1b222c;">×</button>
+        </div>
+
+        <div style="padding: 20px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; overflow-x: hidden;">
+
+          <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 14px;">
+            <label style="display: block;">
+              <span style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px;">Part # <span style="color: #7a4b04;">required</span></span>
+              <input value="{{ f.pn.value }}" onChange="{{ f.pn.onChange }}" placeholder="BES M08EH1-PSC60F-S49G" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 6px; border: 1px solid #d7dce3; background: #ffffff; color: #1b222c; font-size: 13px; font-family: 'IBM Plex Mono', ui-monospace, monospace;" style-focus="outline: 2px solid #2e6f8e; outline-offset: -1px; border-color: #2e6f8e;">
+            </label>
+            <label style="display: block;">
+              <span style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px;">Brand / manufacturer</span>
+              <input value="{{ f.brand.value }}" onChange="{{ f.brand.onChange }}" placeholder="e.g. Balluff" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 6px; border: 1px solid #d7dce3; background: #ffffff; color: #1b222c; font-size: 13px; font-family: inherit;" style-focus="outline: 2px solid #2e6f8e; outline-offset: -1px; border-color: #2e6f8e;">
+            </label>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+            <sc-for list="{{ categoryOptions }}" as="c" hint-placeholder-count="4">
+              <button onClick="{{ c.select }}" style="font-family: inherit; font-size: 13px; font-weight: 700; padding: 10px 8px; border-radius: 6px; cursor: pointer; border: 1px solid {{ c.border }}; background: {{ c.bg }}; color: {{ c.color }};" style-hover="border-color: #2e6f8e;">{{ c.label }}</button>
+            </sc-for>
+          </div>
+
+          <div>
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #5b6572; padding-bottom: 7px; border-bottom: 1px solid #d7dce3; margin-bottom: 12px;">Mechanical information</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+              <label style="display: block;">
+                <span style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px;">Type</span>
+                <input value="{{ f.type.value }}" onChange="{{ f.type.onChange }}" placeholder="e.g. Proximity switch" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 6px; border: 1px solid #d7dce3; background: #ffffff; color: #1b222c; font-size: 13px; font-family: inherit;" style-focus="outline: 2px solid #2e6f8e; outline-offset: -1px; border-color: #2e6f8e;">
+              </label>
+              <label style="display: block;">
+                <span style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px;">Voltage</span>
+                <input value="{{ f.voltage.value }}" onChange="{{ f.voltage.onChange }}" placeholder="e.g. 10-30VDC" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 6px; border: 1px solid #d7dce3; background: #ffffff; color: #1b222c; font-size: 13px; font-family: 'IBM Plex Mono', ui-monospace, monospace;" style-focus="outline: 2px solid #2e6f8e; outline-offset: -1px; border-color: #2e6f8e;">
+              </label>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;">
+              <div>
+                <span style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px;">PNP / NPN</span>
+                <div style="display: flex; gap: 6px;">
+                  <sc-for list="{{ signalOptions }}" as="s" hint-placeholder-count="3">
+                    <button onClick="{{ s.select }}" style="flex: 1; font-family: inherit; font-size: 12px; font-weight: 600; padding: 8px 6px; border-radius: 6px; cursor: pointer; border: 1px solid {{ s.border }}; background: {{ s.bg }}; color: {{ s.color }};" style-hover="border-color: #2e6f8e;">{{ s.label }}</button>
+                  </sc-for>
+                </div>
+              </div>
+              <div>
+                <span style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px;">Light / dark operate</span>
+                <div style="display: flex; gap: 6px;">
+                  <sc-for list="{{ operateOptions }}" as="o" hint-placeholder-count="3">
+                    <button onClick="{{ o.select }}" style="flex: 1; font-family: inherit; font-size: 12px; font-weight: 600; padding: 8px 6px; border-radius: 6px; cursor: pointer; border: 1px solid {{ o.border }}; background: {{ o.bg }}; color: {{ o.color }};" style-hover="border-color: #2e6f8e;">{{ o.label }}</button>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;">
+              <label style="display: block;">
+                <span style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px;">HP</span>
+                <input value="{{ f.hp.value }}" onChange="{{ f.hp.onChange }}" placeholder="motors only" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 6px; border: 1px solid #d7dce3; background: #ffffff; color: #1b222c; font-size: 13px; font-family: 'IBM Plex Mono', ui-monospace, monospace;" style-focus="outline: 2px solid #2e6f8e; outline-offset: -1px; border-color: #2e6f8e;">
+              </label>
+              <label style="display: block;">
+                <span style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px;">RPM</span>
+                <input value="{{ f.rpm.value }}" onChange="{{ f.rpm.onChange }}" placeholder="motors only" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 6px; border: 1px solid #d7dce3; background: #ffffff; color: #1b222c; font-size: 13px; font-family: 'IBM Plex Mono', ui-monospace, monospace;" style-focus="outline: 2px solid #2e6f8e; outline-offset: -1px; border-color: #2e6f8e;">
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #5b6572; padding-bottom: 7px; border-bottom: 1px solid #d7dce3; margin-bottom: 12px;">Additional information — all P/N controls info required</div>
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 14px;">
+              <label style="display: block;">
+                <span style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px;">Cable P/N</span>
+                <input value="{{ f.cablePn.value }}" onChange="{{ f.cablePn.onChange }}" placeholder="7000-08041-6501000" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 6px; border: 1px solid #d7dce3; background: #ffffff; color: #1b222c; font-size: 13px; font-family: 'IBM Plex Mono', ui-monospace, monospace;" style-focus="outline: 2px solid #2e6f8e; outline-offset: -1px; border-color: #2e6f8e;">
+              </label>
+              <label style="display: block;">
+                <span style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px;"># of pins</span>
+                <input value="{{ f.pins.value }}" onChange="{{ f.pins.onChange }}" placeholder="3" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 6px; border: 1px solid #d7dce3; background: #ffffff; color: #1b222c; font-size: 13px; font-family: 'IBM Plex Mono', ui-monospace, monospace;" style-focus="outline: 2px solid #2e6f8e; outline-offset: -1px; border-color: #2e6f8e;">
+              </label>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px;">
+              <label style="display: block;">
+                <span style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px;">Additional switch information</span>
+                <input value="{{ f.addlSwitch.value }}" onChange="{{ f.addlSwitch.onChange }}" placeholder="e.g. M8 quick-disconnect" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 6px; border: 1px solid #d7dce3; background: #ffffff; color: #1b222c; font-size: 13px; font-family: inherit;" style-focus="outline: 2px solid #2e6f8e; outline-offset: -1px; border-color: #2e6f8e;">
+              </label>
+              <label style="display: block;">
+                <span style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px;">Additional cable information</span>
+                <input value="{{ f.addlCable.value }}" onChange="{{ f.addlCable.onChange }}" placeholder="e.g. 10M PUR" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 6px; border: 1px solid #d7dce3; background: #ffffff; color: #1b222c; font-size: 13px; font-family: inherit;" style-focus="outline: 2px solid #2e6f8e; outline-offset: -1px; border-color: #2e6f8e;">
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #5b6572; padding-bottom: 7px; border-bottom: 1px solid #d7dce3; margin-bottom: 12px;">Controls information</div>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px;">
+              <label style="display: flex; align-items: center; gap: 9px; font-size: 13px; cursor: pointer;">
+                <input type="checkbox" checked="{{ f.safety.value }}" onChange="{{ f.safety.onChange }}" style="width: 15px; height: 15px; accent-color: #2e6f8e;">
+                Safety-rated part
+              </label>
+              <label style="display: flex; align-items: center; gap: 9px; font-size: 13px; cursor: pointer;">
+                <input type="checkbox" checked="{{ f.comm.value }}" onChange="{{ f.comm.onChange }}" style="width: 15px; height: 15px; accent-color: #2e6f8e;">
+                Network / fieldbus communication part
+              </label>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
+              <label style="display: block;">
+                <span style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #5b6572; margin-bottom: 5px;">Std in</span>
+                <input value="{{ f.stdIn.value }}" onChange="{{ f.stdIn.onChange }}" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 6px; border: 1px solid #d7dce3; background: #eceff3; color: #1b222c; font-size: 13px; font-family: 'IBM Plex Mono', ui-monospace, monospace;" style-focus="outline: 2px solid #2e6f8e; outline-offset: -1px; border-color: #2e6f8e;">
+              </label>
+              <label style="display: block;">
+                <span style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #5b6572; margin-bottom: 5px;">Std out</span>
+                <input value="{{ f.stdOut.value }}" onChange="{{ f.stdOut.onChange }}" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 6px; border: 1px solid #d7dce3; background: #eceff3; color: #1b222c; font-size: 13px; font-family: 'IBM Plex Mono', ui-monospace, monospace;" style-focus="outline: 2px solid #2e6f8e; outline-offset: -1px; border-color: #2e6f8e;">
+              </label>
+              <label style="display: block;">
+                <span style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #5b6572; margin-bottom: 5px;">Safety in</span>
+                <input value="{{ f.safeIn.value }}" onChange="{{ f.safeIn.onChange }}" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 6px; border: 1px solid #d7dce3; background: #fbeed8; color: #7a4b04; font-size: 13px; font-family: 'IBM Plex Mono', ui-monospace, monospace;" style-focus="outline: 2px solid #e8a33d; outline-offset: -1px; border-color: #e8a33d;">
+              </label>
+              <label style="display: block;">
+                <span style="display: block; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #5b6572; margin-bottom: 5px;">Safety out</span>
+                <input value="{{ f.safeOut.value }}" onChange="{{ f.safeOut.onChange }}" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 6px; border: 1px solid #d7dce3; background: #fbeed8; color: #7a4b04; font-size: 13px; font-family: 'IBM Plex Mono', ui-monospace, monospace;" style-focus="outline: 2px solid #e8a33d; outline-offset: -1px; border-color: #e8a33d;">
+              </label>
+            </div>
+            <label style="display: block; margin-top: 14px;">
+              <span style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px;">Cut sheet path / link</span>
+              <input value="{{ f.cutSheet.value }}" onChange="{{ f.cutSheet.onChange }}" placeholder="..\Mechanical Design\Cut Sheets\OP230" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 6px; border: 1px solid #d7dce3; background: #ffffff; color: #1b222c; font-size: 13px; font-family: 'IBM Plex Mono', ui-monospace, monospace;" style-focus="outline: 2px solid #2e6f8e; outline-offset: -1px; border-color: #2e6f8e;">
+            </label>
+            <label style="display: block; margin-top: 14px;">
+              <span style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px;">Safety / additional controls info</span>
+              <input value="{{ f.controlsInfo.value }}" onChange="{{ f.controlsInfo.onChange }}" placeholder="e.g. dual-channel, feeds safety relay K3" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 6px; border: 1px solid #d7dce3; background: #ffffff; color: #1b222c; font-size: 13px; font-family: inherit;" style-focus="outline: 2px solid #2e6f8e; outline-offset: -1px; border-color: #2e6f8e;">
+            </label>
+          </div>
+
+          <div>
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #5b6572; padding-bottom: 7px; border-bottom: 1px solid #d7dce3; margin-bottom: 12px;">Device image / symbol</div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: stretch;">
+              <sc-for list="{{ imagePicker }}" as="p" hint-placeholder-count="2">
+                <button onClick="{{ p.select }}" style="width: 104px; font-family: inherit; cursor: pointer; padding: 7px; border-radius: 6px; text-align: center; border: 1px solid {{ p.border }}; background: {{ p.bg }};" style-hover="border-color: #2e6f8e;">
+                  <div style="height: 58px; border: 1px solid #d7dce3; border-radius: 4px; background: #ffffff; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                    {{ p.preview }}
+                    <sc-if value="{{ p.noPreview }}" hint-placeholder-val="{{ true }}">
+                      <span style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 12px; font-weight: 600; color: #1b222c;">{{ p.symbol }}</span>
+                    </sc-if>
+                  </div>
+                  <div style="font-family: 'IBM Plex Mono', ui-monospace, monospace; font-size: 10px; color: #5b6572; margin-top: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ p.name }}</div>
+                </button>
+              </sc-for>
+              <button onClick="{{ pickImageFile }}" style="width: 104px; font-family: inherit; font-size: 12px; font-weight: 700; color: #2e6f8e; cursor: pointer; border: 1px dashed #d7dce3; border-radius: 6px; background: none; padding: 7px;" style-hover="border-color: #2e6f8e; background: #e4eef2;">+ Upload<br>image / PDF</button>
+            </div>
+            <div style="font-size: 11px; color: #5b6572; margin-top: 8px;">Picked images land in the Device Images tab and stay linked to this part number.</div>
+          </div>
+
+          <div>
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #5b6572; padding-bottom: 7px; border-bottom: 1px solid #d7dce3; margin-bottom: 12px;">Files</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+              <label style="display: block;">
+                <span style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px;">Datasheet (PDF)</span>
+                <input type="file" accept=".pdf" onChange="{{ onDatasheetFile }}" style="width: 100%; font-size: 12px; font-family: inherit; color: #5b6572;">
+              </label>
+              <label style="display: block;">
+                <span style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px;">CAD file</span>
+                <input type="file" accept=".dwg,.dxf,.step,.stp" onChange="{{ onCadFile }}" style="width: 100%; font-size: 12px; font-family: inherit; color: #5b6572;">
+              </label>
+            </div>
+          </div>
+
+          <label style="display: block;">
+            <span style="display: block; font-size: 12px; font-weight: 700; margin-bottom: 5px;">Notes / revision</span>
+            <textarea value="{{ f.notes.value }}" onChange="{{ f.notes.onChange }}" rows="3" placeholder="Revision note, substitutions, anything the next engineer needs." style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 6px; border: 1px solid #d7dce3; background: #ffffff; color: #1b222c; font-size: 13px; font-family: inherit; resize: vertical;" style-focus="outline: 2px solid #2e6f8e; outline-offset: -1px; border-color: #2e6f8e;"></textarea>
+          </label>
+
+        </div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; border-top: 1px solid #d7dce3; flex-shrink: 0;">
+          <span style="font-size: 12px; color: {{ saveHintColor }};">{{ saveHint }}</span>
+          <div style="display: flex; gap: 10px;">
+            <button onClick="{{ closeModal }}" style="border: 1px solid #d7dce3; border-radius: 6px; padding: 9px 16px; font-size: 13px; font-weight: 700; color: #1b222c; background: #ffffff; cursor: pointer; font-family: inherit;" style-hover="border-color: #2e6f8e; background: #eceff3;">Cancel</button>
+            <button onClick="{{ savePart }}" style="border: none; border-radius: 6px; padding: 9px 18px; font-size: 13px; font-weight: 700; color: #ffffff; background: #2e6f8e; cursor: pointer; font-family: inherit;" style-hover="background: #1f4f66;">Add to Library</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showFamilyBlurbs&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Library&quot;},&quot;startCollapsed&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Library&quot;},&quot;showIoSafety&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Library&quot;}}">
+const PARTS = [
+  {
+    pn: "BANNER-QS18VP6LP", brand: "Banner", category: "sensor", type: "Photoelectric sensor",
+    voltage: "10-30VDC", signal: "PNP", pins: "4", cablePn: "", addlCable: "",
+    stdIn: 1, stdOut: 0, safeIn: 0, safeOut: 0, cad: false, imageId: "img-pe",
+  },
+  {
+    pn: "BES M08EH1-PSC60F-S49G", brand: "Balluff", category: "sensor", type: "Proximity switch",
+    voltage: "10-30VDC", signal: "PNP", pins: "3", cablePn: "7000-08041-6501000", addlCable: "10M PUR",
+    stdIn: 1, stdOut: 0, safeIn: 0, safeOut: 0, cad: false, imageId: "img-prx-no",
+  },
+  {
+    pn: "SMC-CDQ2B32-50DZ", brand: "SMC", category: "pneumatic", type: "Compact cylinder",
+    voltage: "", signal: "NA", pins: "", cablePn: "", addlCable: "",
+    stdIn: 2, stdOut: 1, safeIn: 0, safeOut: 0, cad: true, imageId: "",
+  },
+  {
+    pn: "SMC-CDQ2B32-75DZ", brand: "SMC", category: "pneumatic", type: "Compact cylinder",
+    voltage: "", signal: "NA", pins: "", cablePn: "", addlCable: "",
+    stdIn: 2, stdOut: 1, safeIn: 0, safeOut: 0, cad: true, imageId: "",
+  },
+  {
+    pn: "SMC-CDQ2B40-100DZ", brand: "SMC", category: "pneumatic", type: "Compact cylinder",
+    voltage: "", signal: "NA", pins: "", cablePn: "", addlCable: "",
+    stdIn: 2, stdOut: 1, safeIn: 0, safeOut: 0, cad: true, imageId: "",
+  },
+  {
+    pn: "TURCK-BI5-M18-AP6X", brand: "Turck", category: "sensor", type: "Inductive proximity switch",
+    voltage: "10-30VDC", signal: "PNP", pins: "3", cablePn: "", addlCable: "",
+    stdIn: 1, stdOut: 0, safeIn: 0, safeOut: 0, cad: false, imageId: "img-prx-no",
+  },
+];
+
+const FAMILY = {
+  electrical: {
+    name: "Electrical", categories: ["sensor"],
+    blurb: "Proximity switches, photoeyes, safety devices and comm hardware, catalogued by part number for reuse on every job.",
+    placeholder: "Search electrical parts by part number, brand, or type…",
+  },
+  pneumatic: {
+    name: "Pneumatic / Hydraulic", categories: ["pneumatic"],
+    blurb: "Cylinders, valve banks and actuators — bore, stroke and I/O counts filed against the part number.",
+    placeholder: "Search pneumatic parts by part number, brand, or type…",
+  },
+  special: {
+    name: "Special Devices", categories: ["special"],
+    blurb: "One-off and custom builds that don't fit the standard families.",
+    placeholder: "Search special parts by part number, brand, or type…",
+  },
+  robots: {
+    name: "Robots", categories: ["robot"],
+    blurb: "Robots, end effectors and their controllers — reach, payload and the I/O handshake each one needs.",
+    placeholder: "Search robots by part number, brand, or type…",
+  },
+};
+
+const CAT_FAMILY = { sensor: "electrical", pneumatic: "pneumatic", special: "special", robot: "robots" };
+
+const VALVES_PER_BANK = 6;
+const SENSOR_PTS_PER_BANK = 16;
+const SHEETS_PER_BANK = 6;
+
+const JOBS = [
+  {
+    id: "26764", number: "26764", name: "Genie Baltic Rail Assembly",
+    ops: [
+      { id: "op110", number: "OP110", label: "OP110 — Genie OP110", tag: "Genie OP110" },
+      { id: "op120", number: "OP120", label: "OP120 — Genie OP120", tag: "Genie OP120" },
+      { id: "op130", number: "OP130", label: "OP130 — Genie OP130", tag: "Genie OP130" },
+      { id: "op230", number: "OP230", label: "OP230 — Genie OP230 — Rail Deck / Valve Bank", tag: "Rail Deck / Valve Bank" },
+    ],
+  },
+];
+
+const OP230_BUILD = [
+  ["Cylinder #1A", "Tick Tock", "SMC-CDQ2B32-75DZ", "TT-101"],
+  ["Cylinder #1B", "Tick Tock", "SMC-CDQ2B32-75DZ", "TT-102"],
+  ["Cylinder #2A", "Tick Tock", "SMC-CDQ2B32-50DZ", "TT-103"],
+  ["Cylinder #2B", "Tick Tock", "SMC-CDQ2B32-50DZ", "TT-104"],
+  ["#1 PRX", "Tick Tock", "TURCK-BI5-M18-AP6X", "TT-105"],
+  ["#1 PE", "Tick Tock", "BANNER-QS18VP6LP", "TT-106"],
+  ["#2 PRX", "Tick Tock", "TURCK-BI5-M18-AP6X", "TT-107"],
+  ["#2 PE", "Tick Tock", "BANNER-QS18VP6LP", "TT-108"],
+  ["Cylinder #1", "Drop Deck", "SMC-CDQ2B40-100DZ", "DD-101"],
+  ["Cylinder #2", "Drop Deck", "SMC-CDQ2B40-100DZ", "DD-102"],
+  ["Extend PRX", "Drop Deck", "TURCK-BI5-M18-AP6X", "DD-103"],
+  ["Extend PE", "Drop Deck", "BANNER-QS18VP6LP", "DD-104"],
+  ["Retract PRX", "Drop Deck", "TURCK-BI5-M18-AP6X", "DD-105"],
+  ["Retract PE", "Drop Deck", "BANNER-QS18VP6LP", "DD-106"],
+].map(function (r, i) {
+  return { id: "seed-" + i, name: r[0], station: r[1], pn: r[2], cable: r[3], qty: 1 };
+});
+
+const SEED_IMAGES = [
+  { id: "img-prx-no", name: "PRX-N.O.pdf", symbol: "PRX N.O.", kind: "PDF symbol", url: null },
+  { id: "img-pe", name: "PE-Photoeye.pdf", symbol: "PE", kind: "PDF symbol", url: null },
+];
+
+const BLANK_FORM = {
+  pn: "", brand: "", category: "sensor", type: "", voltage: "", signal: "PNP", operate: "NA",
+  hp: "", rpm: "", cablePn: "", pins: "", addlSwitch: "", addlCable: "",
+  safety: false, comm: false, stdIn: "1", stdOut: "0", safeIn: "0", safeOut: "0",
+  cutSheet: "", controlsInfo: "", notes: "", imageId: "", datasheetName: "", cadName: "",
+};
+
+class Component extends DCLogic {
+  imageInputRef = React.createRef();
+
+  state = {
+    view: null,
+    search: "",
+    filter: "all",
+    collapsed: {},
+    jobSearch: "",
+    jobs: JOBS,
+    opId: "op230",
+    ops: { op230: OP230_BUILD },
+    newJob: null,
+    newOp: null,
+    extra: [],
+    images: SEED_IMAGES,
+    modal: null,
+    uploadTarget: null,
+    addTo: null,
+  };
+
+  allParts() {
+    return PARTS.concat(this.state.extra).slice().sort(function (a, b) {
+      return a.pn.localeCompare(b.pn, undefined, { numeric: true, sensitivity: "base" });
+    });
+  }
+
+  partByPn(pn) {
+    return this.allParts().filter(function (p) { return p.pn === pn; })[0] || null;
+  }
+
+  imageById(id) {
+    return this.state.images.filter(function (im) { return im.id === id; })[0] || null;
+  }
+
+  isOpen(key) {
+    const c = this.state.collapsed[key];
+    return c === undefined ? !this.props.startCollapsed : !c;
+  }
+
+  toggler(key) {
+    const self = this;
+    return function () {
+      self.setState(function (s) {
+        const next = Object.assign({}, s.collapsed);
+        next[key] = self.isOpen(key);
+        return { collapsed: next };
+      });
+    };
+  }
+
+  go(view, search, filter) {
+    return (e) => {
+      if (e && e.preventDefault) e.preventDefault();
+      this.setState({ view: view, search: search || "", filter: filter || "all", collapsed: {}, addTo: null });
+      if (typeof window !== "undefined") window.scrollTo(0, 0);
+    };
+  }
+
+  openOp(opId) {
+    return (e) => {
+      if (e && e.preventDefault) e.preventDefault();
+      this.setState({ view: "op", opId: opId, jobSearch: "", newJob: null, newOp: null, addTo: null });
+      if (typeof window !== "undefined") window.scrollTo(0, 0);
+    };
+  }
+
+  familyParts(key) {
+    const cats = FAMILY[key].categories;
+    return this.allParts().filter(function (p) { return cats.indexOf(p.category) !== -1; });
+  }
+
+  brandLine(key) {
+    const list = this.familyParts(key);
+    if (!list.length) return "nothing catalogued yet";
+    const brands = [];
+    list.forEach(function (p) { if (brands.indexOf(p.brand) === -1) brands.push(p.brand); });
+    return list.length + (list.length === 1 ? " part · " : " parts · ") + brands.join(", ");
+  }
+
+  // Every instance of a part number across every OP in every job.
+  usesOf(pn) {
+    const self = this;
+    const uses = [];
+    this.state.jobs.forEach(function (j) {
+      j.ops.forEach(function (o) {
+        const rows = (self.state.ops[o.id] || []).filter(function (r) { return r.pn === pn; });
+        if (!rows.length) return;
+        let units = 0;
+        rows.forEach(function (r) { units += r.qty; });
+        uses.push({ label: o.number + " ×" + units, open: self.openOp(o.id) });
+      });
+    });
+    return uses;
+  }
+
+  specLine(p) {
+    const bits = [];
+    if (p.voltage) bits.push(p.voltage);
+    if (p.signal && p.signal !== "NA") bits.push(p.signal);
+    if (p.operate && p.operate !== "NA") bits.push(p.operate + " operate");
+    if (p.pins) bits.push(p.pins + " pins");
+    if (p.hp) bits.push(p.hp + " HP");
+    if (p.rpm) bits.push(p.rpm + " RPM");
+    if (p.cablePn) bits.push("Cable P/N: " + p.cablePn);
+    if (p.addlCable) bits.push(p.addlCable);
+    if (p.addlSwitch) bits.push(p.addlSwitch);
+    return bits.length ? bits.join(" · ") : "No spec fields on file yet";
+  }
+
+  ioLine(p) {
+    const showSafety = this.props.showIoSafety ?? true;
+    return showSafety
+      ? p.stdIn + "/" + p.stdOut + " std, " + (p.safeIn || 0) + "/" + (p.safeOut || 0) + " safety"
+      : p.stdIn + "/" + p.stdOut + " std";
+  }
+
+  buildBrandGroups(list) {
+    const order = [];
+    const map = new Map();
+    list.forEach(function (p) {
+      if (!map.has(p.brand)) { map.set(p.brand, []); order.push(p.brand); }
+      map.get(p.brand).push(p);
+    });
+    order.sort(function (a, b) { return a.localeCompare(b); });
+    const self = this;
+    return order.map(function (brand) {
+      return {
+        brand: brand,
+        count: map.get(brand).length,
+        open: self.isOpen("brand:" + brand),
+        toggle: self.toggler("brand:" + brand),
+        parts: map.get(brand).map(function (p) {
+          const uses = self.usesOf(p.pn);
+          const im = p.imageId ? self.imageById(p.imageId) : null;
+          return {
+            pn: p.pn,
+            brand: p.brand,
+            type: p.type || "",
+            specLine: self.specLine(p),
+            io: self.ioLine(p),
+            usedLine: uses.length ? "  ·  used in " + uses.map(function (u) { return u.label; }).join(", ") : "  ·  not used in an OP yet",
+            isSensor: p.category === "sensor",
+            isPneumatic: p.category === "pneumatic",
+            isSpecial: p.category === "special",
+            isRobot: p.category === "robot",
+            isSafety: !!p.safety,
+            isComm: !!p.comm,
+            hasCad: p.cad,
+            noCad: !p.cad,
+            hasImage: !!im,
+            imageSymbol: im ? im.symbol : "",
+            openDatasheet: self.go("datasheets", p.pn),
+            openCad: self.go("cad", p.pn),
+            openImage: self.go("images", im ? im.symbol : ""),
+          };
+        }),
+      };
+    });
+  }
+
+  fileRecords(kind) {
+    const self = this;
+    return this.allParts().map(function (p) {
+      const present = kind === "datasheet" ? true : !!p.cad;
+      return {
+        pn: p.pn,
+        brand: p.brand,
+        family: CAT_FAMILY[p.category],
+        filename: p.pn.replace(/\s+/g, "-") + (kind === "datasheet" ? ".pdf" : ".dwg"),
+        present: present,
+        kindLabel: kind === "datasheet" ? "PDF datasheet" : "AutoCAD block",
+        type: p.type || "",
+        uses: self.usesOf(p.pn),
+      };
+    });
+  }
+
+  buildFileGroups(records, kind) {
+    const order = [];
+    const map = new Map();
+    records.forEach(function (r) {
+      if (!map.has(r.brand)) { map.set(r.brand, []); order.push(r.brand); }
+      map.get(r.brand).push(r);
+    });
+    order.sort(function (a, b) { return a.localeCompare(b); });
+    const self = this;
+    return order.map(function (brand) {
+      const gkey = kind + ":" + brand;
+      return {
+        label: brand,
+        count: map.get(brand).length,
+        open: self.isOpen(gkey),
+        toggle: self.toggler(gkey),
+        files: map.get(brand).map(function (r) {
+          let units = 0;
+          r.uses.forEach(function () { units += 1; });
+          return {
+            filename: r.filename,
+            isSensor: r.family === "electrical",
+            isPneumatic: r.family === "pneumatic",
+            isSpecial: r.family === "special",
+            isRobot: r.family === "robots",
+            present: r.present,
+            missing: !r.present,
+            openLabel: kind === "datasheet" ? "Open PDF" : "Open in CAD",
+            meta: r.present
+              ? r.kindLabel + (r.type ? " · " + r.type : "") + " · " + r.brand
+              : "No " + (kind === "datasheet" ? "datasheet" : "CAD block") + " on file · " + r.brand + (r.type ? " · " + r.type : ""),
+            usedLabel: r.uses.length ? "Used in:" : "Not used in any OP yet",
+            uses: r.uses,
+          };
+        }),
+      };
+    });
+  }
+
+  imageParts(im) {
+    const self = this;
+    return this.allParts().filter(function (p) { return p.imageId === im.id; }).map(function (p) {
+      return { label: p.pn, open: self.go(CAT_FAMILY[p.category] || "electrical", p.pn) };
+    });
+  }
+
+  imageVals() {
+    const self = this;
+    const f = this.state.search.trim().toLowerCase();
+    const tiles = this.state.images.filter(function (im) {
+      if (!f) return true;
+      if (im.name.toLowerCase().includes(f) || im.symbol.toLowerCase().includes(f)) return true;
+      return self.imageParts(im).some(function (p) { return p.label.toLowerCase().includes(f); });
+    }).map(function (im) {
+      const linked = self.imageParts(im);
+      return {
+        name: im.name,
+        symbol: im.symbol,
+        kind: im.kind,
+        preview: im.url
+          ? React.createElement("img", { src: im.url, alt: im.name, style: { maxWidth: "100%", maxHeight: "100%", objectFit: "contain", mixBlendMode: "multiply" } })
+          : null,
+        noPreview: !im.url,
+        meta: im.kind + " · " + linked.length + (linked.length === 1 ? " part" : " parts"),
+        unlinked: linked.length === 0,
+        parts: linked,
+      };
+    });
+    return {
+      imageTiles: tiles,
+      noImages: tiles.length === 0,
+      imageInputRef: this.imageInputRef,
+      onImageUpload: (e) => {
+        const files = Array.from(e.target.files || []);
+        if (!files.length) return;
+        const target = this.state.uploadTarget;
+        const records = files.map(function (file, i) {
+          const isImg = (file.type || "").indexOf("image/") === 0;
+          return {
+            id: "img-" + Date.now() + "-" + i,
+            name: file.name,
+            symbol: file.name.replace(/\.[^.]+$/, "").slice(0, 12).toUpperCase(),
+            kind: isImg ? "Image" : "PDF symbol",
+            url: isImg ? URL.createObjectURL(file) : null,
+          };
+        });
+        e.target.value = "";
+        this.setState(function (s) {
+          const next = { images: s.images.concat(records), uploadTarget: null };
+          if (target === "form" && s.modal) next.modal = Object.assign({}, s.modal, { imageId: records[0].id });
+          return next;
+        });
+      },
+      pickImageFile: (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        this.setState({ uploadTarget: "form" });
+        if (this.imageInputRef.current) this.imageInputRef.current.click();
+      },
+      imagePicker: this.state.images.map(function (im) {
+        const active = self.state.modal && self.state.modal.imageId === im.id;
+        return {
+          name: im.name,
+          symbol: im.symbol,
+          preview: im.url
+            ? React.createElement("img", { src: im.url, alt: im.name, style: { maxWidth: "100%", maxHeight: "100%", objectFit: "contain", mixBlendMode: "multiply" } })
+            : null,
+          noPreview: !im.url,
+          border: active ? "#2e6f8e" : "#d7dce3",
+          bg: active ? "#e4eef2" : "#ffffff",
+          select: function (e) {
+            if (e && e.preventDefault) e.preventDefault();
+            self.setState(function (s) {
+              return { modal: Object.assign({}, s.modal, { imageId: active ? "" : im.id }) };
+            });
+          },
+        };
+      }),
+    };
+  }
+
+  field(key) {
+    const self = this;
+    return {
+      value: this.state.modal ? this.state.modal[key] : "",
+      onChange: function (e) {
+        const val = e.target.type === "checkbox" ? e.target.checked : e.target.value;
+        self.setState(function (s) {
+          const next = Object.assign({}, s.modal);
+          next[key] = val;
+          return { modal: next };
+        });
+      },
+    };
+  }
+
+  pickOptions(list, key) {
+    const self = this;
+    const cur = this.state.modal ? this.state.modal[key] : null;
+    return list.map(function (o) {
+      const active = cur === o.key;
+      return {
+        label: o.label,
+        border: active ? "#2e6f8e" : "#d7dce3",
+        bg: active ? "#e4eef2" : "#ffffff",
+        color: active ? "#1f4f66" : "#5b6572",
+        select: function (e) {
+          if (e && e.preventDefault) e.preventDefault();
+          self.setState(function (s) {
+            const next = Object.assign({}, s.modal);
+            next[key] = o.key;
+            return { modal: next };
+          });
+        },
+      };
+    });
+  }
+
+  modalVals() {
+    const m = this.state.modal;
+    const ready = !!m && m.pn.trim().length > 0;
+    return {
+      modalOpen: !!m,
+      f: {
+        pn: this.field("pn"), brand: this.field("brand"), type: this.field("type"),
+        voltage: this.field("voltage"), hp: this.field("hp"), rpm: this.field("rpm"),
+        cablePn: this.field("cablePn"), pins: this.field("pins"),
+        addlSwitch: this.field("addlSwitch"), addlCable: this.field("addlCable"),
+        safety: this.field("safety"), comm: this.field("comm"),
+        stdIn: this.field("stdIn"), stdOut: this.field("stdOut"),
+        safeIn: this.field("safeIn"), safeOut: this.field("safeOut"),
+        cutSheet: this.field("cutSheet"), controlsInfo: this.field("controlsInfo"),
+        notes: this.field("notes"),
+      },
+      categoryOptions: this.pickOptions([
+        { key: "sensor", label: "Electrical" },
+        { key: "pneumatic", label: "Pneumatic / Hyd." },
+        { key: "special", label: "Special" },
+        { key: "robot", label: "Robot" },
+      ], "category"),
+      signalOptions: this.pickOptions([
+        { key: "PNP", label: "PNP" }, { key: "NPN", label: "NPN" }, { key: "NA", label: "NA" },
+      ], "signal"),
+      operateOptions: this.pickOptions([
+        { key: "Light", label: "Light" }, { key: "Dark", label: "Dark" }, { key: "NA", label: "NA" },
+      ], "operate"),
+      saveHint: ready
+        ? "Device names, stations and cable tags get assigned when this part is added to an OP."
+        : "Part # is required — it's how the library is sorted and how files link.",
+      saveHintColor: ready ? "#5b6572" : "#7a4b04",
+      closeModal: (e) => { if (e && e.preventDefault) e.preventDefault(); this.setState({ modal: null, uploadTarget: null }); },
+      onDatasheetFile: (e) => {
+        const file = (e.target.files || [])[0];
+        this.setState(function (s) { return { modal: Object.assign({}, s.modal, { datasheetName: file ? file.name : "" }) }; });
+      },
+      onCadFile: (e) => {
+        const file = (e.target.files || [])[0];
+        this.setState(function (s) { return { modal: Object.assign({}, s.modal, { cadName: file ? file.name : "" }) }; });
+      },
+      savePart: (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        const m2 = this.state.modal;
+        if (!m2 || !m2.pn.trim()) return;
+        const num = function (v) { const n = parseInt(v, 10); return isNaN(n) ? 0 : n; };
+        const part = {
+          pn: m2.pn.trim(),
+          brand: m2.brand.trim() || "Unbranded",
+          category: m2.category,
+          type: m2.type.trim(),
+          voltage: m2.voltage.trim(),
+          signal: m2.signal,
+          operate: m2.operate,
+          pins: m2.pins.trim(),
+          hp: m2.hp.trim(),
+          rpm: m2.rpm.trim(),
+          cablePn: m2.cablePn.trim(),
+          addlSwitch: m2.addlSwitch.trim(),
+          addlCable: m2.addlCable.trim(),
+          safety: m2.safety,
+          comm: m2.comm,
+          stdIn: num(m2.stdIn), stdOut: num(m2.stdOut),
+          safeIn: num(m2.safeIn), safeOut: num(m2.safeOut),
+          cad: !!m2.cadName,
+          cutSheet: m2.cutSheet.trim(),
+          controlsInfo: m2.controlsInfo.trim(),
+          notes: m2.notes.trim(),
+          imageId: m2.imageId,
+        };
+        this.setState({
+          extra: this.state.extra.concat([part]),
+          modal: null,
+          uploadTarget: null,
+          view: CAT_FAMILY[part.category] || null,
+          search: "",
+          collapsed: {},
+        });
+        if (typeof window !== "undefined") window.scrollTo(0, 0);
+      },
+    };
+  }
+
+  currentOp() {
+    const id = this.state.opId;
+    let found = null;
+    this.state.jobs.forEach(function (j) {
+      j.ops.forEach(function (o) { if (o.id === id) found = { job: j, op: o }; });
+    });
+    return found;
+  }
+
+  opRows() {
+    return this.state.ops[this.state.opId] || [];
+  }
+
+  setOpRows(fn) {
+    const id = this.state.opId;
+    this.setState(function (s) {
+      const ops = Object.assign({}, s.ops);
+      ops[id] = fn(s.ops[id] || []);
+      return { ops: ops };
+    });
+  }
+
+  jobsVals() {
+    const self = this;
+    const newOp = this.state.newOp;
+    let opTotal = 0;
+    this.state.jobs.forEach(function (j) { opTotal += j.ops.length; });
+
+    const jobList = this.state.jobs.map(function (j) {
+      return {
+        name: j.name,
+        number: j.number,
+        opMeta: j.ops.length + (j.ops.length === 1 ? " OP" : " OPs"),
+        formOpen: !!newOp && newOp.jobId === j.id,
+        addOp: function (e) {
+          if (e && e.preventDefault) e.preventDefault();
+          self.setState({ newOp: { jobId: j.id, number: "", name: "" } });
+        },
+        ops: j.ops.map(function (o) {
+          return { label: o.label, open: self.openOp(o.id) };
+        }),
+      };
+    });
+
+    return {
+      jobsMeta: this.state.jobs.length + (this.state.jobs.length === 1 ? " job · " : " jobs · ") + opTotal + " OPs",
+      jobList: jobList,
+      newJobOpen: !!this.state.newJob,
+      newJobNumber: this.state.newJob ? this.state.newJob.number : "",
+      newJobName: this.state.newJob ? this.state.newJob.name : "",
+      openNewJob: (e) => { if (e && e.preventDefault) e.preventDefault(); this.setState({ newJob: { number: "", name: "" }, newOp: null }); },
+      onNewJobNumber: (e) => this.setState({ newJob: Object.assign({}, this.state.newJob, { number: e.target.value }) }),
+      onNewJobName: (e) => this.setState({ newJob: Object.assign({}, this.state.newJob, { name: e.target.value }) }),
+      cancelJob: (e) => { if (e && e.preventDefault) e.preventDefault(); this.setState({ newJob: null }); },
+      saveJob: (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        const draft = this.state.newJob;
+        if (!draft || !draft.number.trim()) return;
+        const job = { id: draft.number.trim(), number: draft.number.trim(), name: draft.name.trim() || "Untitled job", ops: [] };
+        this.setState({ jobs: this.state.jobs.concat([job]), newJob: null });
+      },
+      newOpNumber: newOp ? newOp.number : "",
+      newOpName: newOp ? newOp.name : "",
+      onNewOpNumber: (e) => this.setState({ newOp: Object.assign({}, this.state.newOp, { number: e.target.value }) }),
+      onNewOpName: (e) => this.setState({ newOp: Object.assign({}, this.state.newOp, { name: e.target.value }) }),
+      cancelOp: (e) => { if (e && e.preventDefault) e.preventDefault(); this.setState({ newOp: null }); },
+      saveOp: (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        const draft = this.state.newOp;
+        if (!draft || !draft.number.trim()) return;
+        const numLabel = draft.number.trim();
+        const name = draft.name.trim();
+        const op = {
+          id: draft.jobId + ":" + numLabel.toLowerCase(),
+          number: numLabel,
+          label: name ? numLabel + " — " + name : numLabel,
+          tag: name || "no description yet",
+        };
+        const jobs = this.state.jobs.map(function (j) {
+          return j.id === draft.jobId ? Object.assign({}, j, { ops: j.ops.concat([op]) }) : j;
+        });
+        this.setState({ jobs: jobs, newOp: null });
+      },
+    };
+  }
+
+  opVals() {
+    const self = this;
+    const jf = this.state.jobSearch.trim().toLowerCase();
+    const rows = this.opRows();
+    const current = this.currentOp();
+    const parts = this.allParts();
+    const addTo = this.state.addTo;
+
+    const libRows = parts.filter(function (p) {
+      if (!jf) return true;
+      return p.pn.toLowerCase().includes(jf) || p.brand.toLowerCase().includes(jf) || (p.type || "").toLowerCase().includes(jf);
+    }).map(function (p) {
+      return {
+        pn: p.pn,
+        meta: p.brand + (p.type ? " · " + p.type : "") + " · I/O " + p.stdIn + "/" + p.stdOut,
+        isSensor: p.category === "sensor",
+        isPneumatic: p.category === "pneumatic",
+        isSpecial: p.category === "special",
+        isRobot: p.category === "robot",
+        adding: !!addTo && addTo.pn === p.pn,
+        add: function (e) {
+          if (e && e.preventDefault) e.preventDefault();
+          self.setState({ addTo: { pn: p.pn, name: "", station: "", cable: "" } });
+        },
+      };
+    });
+
+    const buildRows = rows.map(function (r) {
+      const p = self.partByPn(r.pn);
+      const bits = [r.pn];
+      if (r.station) bits.push(r.station);
+      if (r.cable) bits.push("Cable " + r.cable);
+      if (p) bits.push("I/O " + p.stdIn + "/" + p.stdOut);
+      return {
+        name: r.name,
+        meta: bits.join(" · "),
+        qty: r.qty,
+        inc: function (e) {
+          if (e && e.preventDefault) e.preventDefault();
+          self.setOpRows(function (list) {
+            return list.map(function (x) { return x.id === r.id ? Object.assign({}, x, { qty: x.qty + 1 }) : x; });
+          });
+        },
+        dec: function (e) {
+          if (e && e.preventDefault) e.preventDefault();
+          self.setOpRows(function (list) {
+            return list.map(function (x) { return x.id === r.id ? Object.assign({}, x, { qty: Math.max(1, x.qty - 1) }) : x; });
+          });
+        },
+        remove: function (e) {
+          if (e && e.preventDefault) e.preventDefault();
+          self.setOpRows(function (list) { return list.filter(function (x) { return x.id !== r.id; }); });
+        },
+      };
+    });
+
+    let stdIn = 0, stdOut = 0, safeIn = 0, safeOut = 0, valves = 0, sensors = 0, units = 0;
+    rows.forEach(function (r) {
+      const p = self.partByPn(r.pn);
+      if (!p) return;
+      units += r.qty;
+      stdIn += p.stdIn * r.qty;
+      stdOut += p.stdOut * r.qty;
+      safeIn += (p.safeIn || 0) * r.qty;
+      safeOut += (p.safeOut || 0) * r.qty;
+      if (p.category === "pneumatic") valves += r.qty;
+      if (p.category === "sensor") sensors += r.qty;
+    });
+
+    const banks = Math.max(
+      Math.ceil(valves / VALVES_PER_BANK),
+      Math.ceil(sensors / SENSOR_PTS_PER_BANK),
+      rows.length ? 1 : 0
+    );
+    const sheets = banks * SHEETS_PER_BANK;
+    const plural = function (n, word) { return n + " " + word + (n === 1 ? "" : "s"); };
+
+    return {
+      opTitle: current ? current.job.number + " — " + current.op.number : "",
+      opTag: current ? current.op.tag : "",
+      opNumber: current ? current.op.number : "",
+      opJobLabel: current ? current.job.name + " (" + current.job.number + ")" : "",
+      buildPanelTitle: current ? current.op.number + " Build" : "Build",
+      libCount: parts.length + (parts.length === 1 ? " part" : " parts"),
+      buildCount: units + (units === 1 ? " device named" : " devices named"),
+      libRows: libRows,
+      libEmpty: libRows.length === 0,
+      libEmptyMessage: jf
+        ? "No part matches “" + this.state.jobSearch.trim() + "” — catalog it in the Hardware Library first."
+        : "No parts in the library yet — catalog one in the Hardware Library first.",
+      buildRows: buildRows,
+      buildEmpty: buildRows.length === 0,
+      hasBuild: buildRows.length > 0,
+      clearBuild: (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        this.setOpRows(function () { return []; });
+      },
+      jobSearch: this.state.jobSearch,
+      onJobSearch: (e) => this.setState({ jobSearch: e.target.value }),
+      addName: addTo ? addTo.name : "",
+      addStation: addTo ? addTo.station : "",
+      addCable: addTo ? addTo.cable : "",
+      addHint: addTo && addTo.name.trim() ? "" : "Device name required",
+      onAddName: (e) => this.setState({ addTo: Object.assign({}, this.state.addTo, { name: e.target.value }) }),
+      onAddStation: (e) => this.setState({ addTo: Object.assign({}, this.state.addTo, { station: e.target.value }) }),
+      onAddCable: (e) => this.setState({ addTo: Object.assign({}, this.state.addTo, { cable: e.target.value }) }),
+      cancelAdd: (e) => { if (e && e.preventDefault) e.preventDefault(); this.setState({ addTo: null }); },
+      confirmAdd: (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        const draft = this.state.addTo;
+        if (!draft || !draft.name.trim()) return;
+        const row = {
+          id: "row-" + Date.now(),
+          pn: draft.pn,
+          name: draft.name.trim(),
+          station: draft.station.trim(),
+          cable: draft.cable.trim(),
+          qty: 1,
+        };
+        this.setOpRows(function (list) { return list.concat([row]); });
+        this.setState({ addTo: null });
+      },
+      stdIn: stdIn,
+      stdOut: stdOut,
+      safeIn: safeIn,
+      safeOut: safeOut,
+      sheetHeadline: plural(sheets, "sheet") + " · " + plural(banks, "valve bank"),
+      sheetSupport: banks
+        ? banks + " bank × " + SHEETS_PER_BANK + " sheets (2 content + 2 spare before + 2 spare after). Driven by "
+          + valves + " pneumatic valves (max " + VALVES_PER_BANK + "/bank) and "
+          + sensors + " sensors (max " + SENSOR_PTS_PER_BANK + "/bank)."
+        : "Name a part into this OP to size the controls sheet set.",
+    };
+  }
+
+  renderVals() {
+    const view = this.state.view;
+    const isDoc = view === "datasheets" || view === "cad";
+    const isJobs = view === "jobs";
+    const isOp = view === "op";
+    const isImages = view === "images";
+    const isFamily = !!view && !isDoc && !isJobs && !isOp && !isImages;
+    const raw = this.state.search;
+    const f = raw.trim().toLowerCase();
+    const searching = f.length > 0;
+    const parts = this.allParts();
+
+    const dsRecords = this.fileRecords("datasheet");
+    const cadRecords = this.fileRecords("cad");
+    const cadOnFile = cadRecords.filter(function (r) { return r.present; }).length;
+    const cadMissing = cadRecords.length - cadOnFile;
+
+    const counts = {
+      electrical: this.familyParts("electrical").length,
+      pneumatic: this.familyParts("pneumatic").length,
+      special: this.familyParts("special").length,
+      robots: this.familyParts("robots").length,
+    };
+    const cta = function (n) { return n ? "View parts →" : "Catalog the first one →"; };
+
+    let brandGroups = [];
+    let fileGroups = [];
+    let matchCount = 0;
+    let filters = [];
+
+    if (isDoc) {
+      const kind = view === "datasheets" ? "datasheet" : "cad";
+      const all = kind === "datasheet" ? dsRecords : cadRecords;
+      const filter = this.state.filter;
+      const self = this;
+      const shown = all.filter(function (r) {
+        if (filter !== "all" && r.family !== filter) return false;
+        if (!f) return true;
+        if (r.pn.toLowerCase().includes(f) || r.brand.toLowerCase().includes(f) || r.type.toLowerCase().includes(f)) return true;
+        return r.uses.some(function (u) { return u.label.toLowerCase().includes(f); });
+      });
+      matchCount = shown.length;
+      fileGroups = this.buildFileGroups(shown, kind);
+      filters = [
+        { key: "all", label: "All" },
+        { key: "electrical", label: "Electrical" },
+        { key: "pneumatic", label: "Pneumatic / Hydraulic" },
+        { key: "special", label: "Special" },
+        { key: "robots", label: "Robots" },
+      ].map(function (o) {
+        const active = filter === o.key;
+        return {
+          label: o.label,
+          border: active ? "#2e6f8e" : "#d7dce3",
+          bg: active ? "#e4eef2" : "#ffffff",
+          color: active ? "#1f4f66" : "#5b6572",
+          select: function (e) { if (e && e.preventDefault) e.preventDefault(); self.setState({ filter: o.key }); },
+        };
+      });
+    } else if (isImages) {
+      matchCount = this.state.images.length;
+    } else {
+      const scope = isFamily ? this.familyParts(view) : parts;
+      const matches = scope.filter(function (p) {
+        if (!f) return true;
+        return p.pn.toLowerCase().includes(f) || p.brand.toLowerCase().includes(f) || (p.type || "").toLowerCase().includes(f);
+      });
+      matchCount = matches.length;
+      if (isFamily || searching) brandGroups = this.buildBrandGroups(matches);
+    }
+
+    let pageTitle = "Hardware Library";
+    let pageMeta = parts.length + " parts · shared across every job";
+    let pageBlurb = "The library holds part numbers, not device names. Catalog a part once — brand, spec, datasheet, CAD, I/O — then name it per station when you pull it into a job's OP.";
+    let placeholder = "Search by part number, brand, or type…";
+    let actionLabel = "+ Catalog New Part";
+
+    if (isFamily) {
+      pageTitle = FAMILY[view].name;
+      pageMeta = matchCount + " of " + parts.length + " parts in the library";
+      pageBlurb = FAMILY[view].blurb;
+      placeholder = FAMILY[view].placeholder;
+    } else if (view === "datasheets") {
+      pageTitle = "Datasheets & Manuals";
+      pageMeta = matchCount + " of " + dsRecords.length + " files";
+      pageBlurb = "Every datasheet and manual, filed by brand and part number. One file per part number — open it here, or jump to the OPs that use the part.";
+      placeholder = "Search files by part number, brand, or OP…";
+      actionLabel = "+ Upload Datasheet";
+    } else if (view === "cad") {
+      pageTitle = "CAD Files";
+      pageMeta = matchCount + " of " + cadRecords.length + " part numbers";
+      pageBlurb = "AutoCAD blocks filed by brand and part number. Missing blocks are listed too, so gaps show up before a panel drawing needs them.";
+      placeholder = "Search blocks by part number, brand, or OP…";
+      actionLabel = "+ Upload CAD File";
+    } else if (isImages) {
+      pageTitle = "Device Images";
+      pageMeta = this.state.images.length + " symbol files";
+      pageBlurb = "Symbol drawings and photos that go on the build sheet. Upload a PDF or image once, pick it while cataloging a part, and it stays linked to that part number.";
+      placeholder = "Search images by file, symbol, or part number…";
+      actionLabel = "+ Upload Device Image";
+    }
+
+    const emptyMessage = searching
+      ? "No results match “" + raw + "”."
+      : isDoc ? "No files in this family yet." : "Nothing in this family yet — catalog the first part.";
+
+    return Object.assign(this.jobsVals(), this.opVals(), this.imageVals(), this.modalVals(), {
+      showCatalog: !isJobs && !isOp,
+      showJobsIndex: isJobs,
+      showOpBuild: isOp,
+      showImageGrid: isImages,
+      showCrumb: isFamily || isDoc || isImages,
+      crumbLeaf: isFamily ? FAMILY[view].name : (isImages ? "Device Images" : (view === "datasheets" ? "Datasheets & Manuals" : "CAD Files")),
+
+      pageTitle: pageTitle,
+      pageMeta: pageMeta,
+      pageBlurb: pageBlurb,
+      searchPlaceholder: placeholder,
+      actionLabel: actionLabel,
+      onAction: (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        if (isImages) {
+          this.setState({ uploadTarget: null });
+          if (this.imageInputRef.current) this.imageInputRef.current.click();
+          return;
+        }
+        this.setState({ modal: Object.assign({}, BLANK_FORM) });
+      },
+
+      tabLibraryColor: isDoc || isJobs || isOp || isImages ? "#5b6572" : "#1b222c",
+      tabLibraryRule: isDoc || isJobs || isOp || isImages ? "transparent" : "#2e6f8e",
+      tabDatasheetsColor: view === "datasheets" ? "#1b222c" : "#5b6572",
+      tabDatasheetsRule: view === "datasheets" ? "#2e6f8e" : "transparent",
+      tabCadColor: view === "cad" ? "#1b222c" : "#5b6572",
+      tabCadRule: view === "cad" ? "#2e6f8e" : "transparent",
+      tabImagesColor: isImages ? "#1b222c" : "#5b6572",
+      tabImagesRule: isImages ? "#2e6f8e" : "transparent",
+      tabJobsColor: isJobs || isOp ? "#1b222c" : "#5b6572",
+      tabJobsRule: isJobs || isOp ? "#2e6f8e" : "transparent",
+
+      showFamilies: !isDoc && !isFamily && !isImages && !searching,
+      showDocShortcuts: !isDoc && !isFamily && !isImages && !searching,
+      showFamilyFilter: isDoc,
+      filters: filters,
+      showBlurbs: this.props.showFamilyBlurbs ?? true,
+      electricalCount: counts.electrical,
+      pneumaticCount: counts.pneumatic,
+      specialCount: counts.special,
+      robotCount: counts.robots,
+      electricalBrands: this.brandLine("electrical"),
+      pneumaticBrands: this.brandLine("pneumatic"),
+      specialBrands: this.brandLine("special"),
+      robotBrands: this.brandLine("robots"),
+      electricalCta: cta(counts.electrical),
+      pneumaticCta: cta(counts.pneumatic),
+      specialCta: cta(counts.special),
+      robotCta: cta(counts.robots),
+      datasheetMeta: dsRecords.length + " files · one per part number",
+      cadMeta: cadOnFile + " blocks on file · " + cadMissing + " PNs missing",
+      imagesMeta: this.state.images.length + " symbol files",
+
+      brandGroups: brandGroups,
+      fileGroups: fileGroups,
+      isEmpty: (isDoc || isFamily || searching) && !isImages && matchCount === 0,
+      emptyMessage: emptyMessage,
+
+      search: raw,
+      onSearch: (e) => this.setState({ search: e.target.value }),
+      goHub: this.go(null),
+      goElectrical: this.go("electrical"),
+      goPneumatic: this.go("pneumatic"),
+      goSpecial: this.go("special"),
+      goRobots: this.go("robots"),
+      goDatasheets: this.go("datasheets"),
+      goCad: this.go("cad"),
+      goImages: this.go("images"),
+      goJobs: this.go("jobs"),
+    });
+  }
+}
+</script>
+</body>
+</html>
