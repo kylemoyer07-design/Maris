@@ -2,10 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import BrandGroup from "@/components/BrandGroup";
+import CatalogPartModal from "@/components/CatalogPartModal";
 import { groupByBrand, loadPartsWithUsage, matchesPart, PartsData } from "@/lib/parts";
 import {
   CATEGORY_LABEL,
+  CATEGORY_TO_FAMILY,
   FAMILY_BLURB,
   FAMILY_LABEL,
   FAMILY_ORDER,
@@ -14,7 +17,9 @@ import {
 } from "@/lib/types";
 
 export default function LibraryPage() {
+  const router = useRouter();
   const [data, setData] = useState<PartsData>({ parts: [], usage: {}, imageCount: 0 });
+  const [cataloging, setCataloging] = useState(false);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
@@ -72,18 +77,15 @@ export default function LibraryPage() {
         />
         <button
           type="button"
-          disabled
-          title="The Catalog New Part form is not built yet."
+          onClick={() => setCataloging(true)}
           style={{
-            background: "var(--surface-2)",
-            color: "var(--text-muted)",
-            border: "1px solid var(--border)",
+            background: "var(--primary)",
+            color: "#ffffff",
             fontSize: 14,
             fontWeight: 700,
             padding: "8px 16px",
             borderRadius: 6,
             whiteSpace: "nowrap",
-            cursor: "not-allowed",
           }}
         >
           + Catalog New Part
@@ -181,6 +183,17 @@ export default function LibraryPage() {
             <StorageShortcut href="/images" title="Device Images" meta={`${imageCount} symbol files`} />
           </div>
         </>
+      )}
+
+      {cataloging && (
+        <CatalogPartModal
+          onSaved={(part: Part) => {
+            setCataloging(false);
+            // The new part is only visible on its family page, so go there.
+            router.push(`/library/${CATEGORY_TO_FAMILY[part.category]}`);
+          }}
+          onCancel={() => setCataloging(false)}
+        />
       )}
     </div>
   );

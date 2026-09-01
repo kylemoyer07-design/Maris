@@ -2,15 +2,18 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import BrandGroup from "@/components/BrandGroup";
+import CatalogPartModal from "@/components/CatalogPartModal";
 import { groupByBrand, loadPartsWithUsage, matchesPart, PartsData } from "@/lib/parts";
 import {
+  CATEGORY_TO_FAMILY,
   Family,
   FAMILY_BLURB,
   FAMILY_LABEL,
   FAMILY_ORDER,
   FAMILY_TO_CATEGORY,
+  Part,
 } from "@/lib/types";
 
 function isFamily(value: string): value is Family {
@@ -19,7 +22,9 @@ function isFamily(value: string): value is Family {
 
 export default function FamilyPage() {
   const params = useParams<{ family: string }>();
+  const router = useRouter();
   const [data, setData] = useState<PartsData>({ parts: [], usage: {}, imageCount: 0 });
+  const [cataloging, setCataloging] = useState(false);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
@@ -38,6 +43,16 @@ export default function FamilyPage() {
       active = false;
     };
   }, []);
+
+  // Called after cataloging a part into this family, so it appears without a
+  // full reload. Deliberately not the effect's own body — setState there is
+  // what react-hooks/set-state-in-effect flags.
+  const refresh = () => {
+    loadPartsWithUsage().then((d) => {
+      setData(d);
+      setLoading(false);
+    });
+  };
 
   const inFamily = useMemo(() => {
     if (!valid) return [];
@@ -96,6 +111,21 @@ export default function FamilyPage() {
           className="paneliq-input"
           style={{ flex: 1, minWidth: 240 }}
         />
+        <button
+          type="button"
+          onClick={() => setCataloging(true)}
+          style={{
+            background: "var(--primary)",
+            color: "#ffffff",
+            fontSize: 14,
+            fontWeight: 700,
+            padding: "8px 16px",
+            borderRadius: 6,
+            whiteSpace: "nowrap",
+          }}
+        >
+          + Catalog New Part
+        </button>
       </div>
 
       {grouped.map(([brand, list]) => (
@@ -115,6 +145,22 @@ export default function FamilyPage() {
             ? `No part in this family matches “${search}”.`
             : "Nothing catalogued in this family yet."}
         </p>
+      )}
+
+      {cataloging && (
+        <CatalogPartModal
+          initialCategory={FAMILY_TO_CATEGORY[family]}
+          onSaved={(part: Part) => {
+            setCataloging(false);
+            setSearch("");
+            const target = CATEGORY_TO_FAMILY[part.category];
+            // Categorised into another family — follow the part rather than
+            // leaving the engineer on a page that will not show it.
+            if (target !== family) router.push(`/library/${target}`);
+            else refresh();
+          }}
+          onCancel={() => setCataloging(false)}
+        />
       )}
     </div>
   );
