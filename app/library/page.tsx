@@ -1,171 +1,216 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { CATEGORY_LABEL, Device } from "@/lib/types";
-import DeviceForm from "@/components/DeviceForm";
+import Link from "next/link";
+import BrandGroup from "@/components/BrandGroup";
+import { groupByBrand, loadPartsWithUsage, matchesPart, PartsData } from "@/lib/parts";
+import {
+  CATEGORY_LABEL,
+  FAMILY_BLURB,
+  FAMILY_LABEL,
+  FAMILY_ORDER,
+  FAMILY_TO_CATEGORY,
+  Part,
+} from "@/lib/types";
 
 export default function LibraryPage() {
-  const [devices, setDevices] = useState<Device[]>([]);
+  const [data, setData] = useState<PartsData>({ parts: [], usage: {}, imageCount: 0 });
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [showForm, setShowForm] = useState(false);
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
-  async function load() {
-    setLoading(true);
-    const { data } = await supabase
-      .from("devices")
-      .select("*")
-      .order("station", { ascending: true })
-      .order("name", { ascending: true });
-    setDevices((data as Device[]) || []);
-    setLoading(false);
-  }
-
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    load();
+    let active = true;
+    loadPartsWithUsage().then((d) => {
+      if (!active) return;
+      setData(d);
+      setLoading(false);
+    });
+    return () => {
+      active = false;
+    };
   }, []);
 
-  const stations = useMemo(() => {
-    const map = new Map<string, Device[]>();
-    const f = search.toLowerCase();
-    devices.forEach((d) => {
-      if (
-        f &&
-        !d.name.toLowerCase().includes(f) &&
-        !(d.station || "").toLowerCase().includes(f) &&
-        !(d.part_number || "").toLowerCase().includes(f)
-      )
-        return;
-      const key = d.station || "General";
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(d);
-    });
-    return Array.from(map.entries());
-  }, [devices, search]);
+  const { parts, usage, imageCount } = data;
 
-  function fileUrl(path: string | null) {
-    if (!path) return null;
-    return supabase.storage.from("device-files").getPublicUrl(path).data.publicUrl;
-  }
+  const searching = search.trim().length > 0;
+  const matches = useMemo(() => parts.filter((p) => matchesPart(p, search)), [parts, search]);
+  const grouped = useMemo(() => groupByBrand(matches), [matches]);
+
+  const countFor = (category: string) => parts.filter((p) => p.category === category).length;
+  const brandsFor = (category: string) => {
+    const brands = [...new Set(parts.filter((p) => p.category === category && p.brand).map((p) => p.brand))];
+    return brands.length ? brands.join(", ") : null;
+  };
+
+  const datasheetCount = parts.filter((p) => p.datasheet_path).length;
+  const cadCount = parts.filter((p) => p.cad_path).length;
 
   return (
-    <div className="max-w-5xl mx-auto px-6 py-8">
-      <div className="flex items-center justify-between flex-wrap gap-3 mb-1">
-        <h1 className="display text-2xl font-extrabold">Hardware Library</h1>
-        <span className="mono text-xs" style={{ color: "var(--text-muted)" }}>
-          {devices.length} devices · shared across every job
+    <div className="max-w-5xl mx-auto" style={{ padding: "32px 24px" }}>
+      <div className="flex justify-between flex-wrap items-baseline" style={{ gap: 12, marginBottom: 4 }}>
+        <h1 className="display" style={{ fontSize: 24, fontWeight: 800, letterSpacing: "-0.01em" }}>
+          Hardware Library
+        </h1>
+        <span className="mono" style={{ fontSize: 12, color: "var(--text-muted)" }}>
+          {loading ? "loading…" : `${parts.length} parts · shared across every job`}
         </span>
       </div>
-      <p className="text-sm mb-5" style={{ color: "var(--text-muted)" }}>
-        Catalog a device once here — spec, datasheet, CAD file, I/O — then pull it into any job&apos;s OP.
+
+      <p style={{ fontSize: 14, color: "var(--text-muted)", maxWidth: 780, margin: "0 0 20px" }}>
+        The library holds part numbers, not device names. Catalog a part once — brand, spec,
+        datasheet, CAD, I/O — then name it per station when you pull it into a job&apos;s OP.
       </p>
 
-      <div className="flex gap-3 mb-5">
+      <div className="flex flex-wrap" style={{ gap: 12, marginBottom: 20 }}>
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by device, station, or part number…"
-          className="flex-1 px-3 py-2 rounded-md border text-sm"
-          style={{ borderColor: "var(--border)", background: "var(--surface)" }}
+          placeholder="Search by part number, brand, or type…"
+          className="paneliq-input"
+          style={{ flex: 1, minWidth: 240 }}
         />
         <button
-          onClick={() => setShowForm(true)}
-          className="rounded-md px-4 py-2 text-sm font-bold text-white whitespace-nowrap"
-          style={{ background: "var(--primary)" }}
+          type="button"
+          disabled
+          title="The Catalog New Part form is not built yet."
+          style={{
+            background: "var(--surface-2)",
+            color: "var(--text-muted)",
+            border: "1px solid var(--border)",
+            fontSize: 14,
+            fontWeight: 700,
+            padding: "8px 16px",
+            borderRadius: 6,
+            whiteSpace: "nowrap",
+            cursor: "not-allowed",
+          }}
         >
-          + Catalog New Device
+          + Catalog New Part
         </button>
       </div>
 
-      {loading && <div className="text-sm" style={{ color: "var(--text-muted)" }}>Loading…</div>}
-      {!loading && devices.length === 0 && (
-        <div
-          className="text-sm rounded-lg border p-6 text-center"
-          style={{ borderColor: "var(--border)", color: "var(--text-muted)" }}
-        >
-          Nothing in the library yet — add the first device.
-        </div>
-      )}
-
-      <div className="flex flex-col gap-1">
-        {stations.map(([station, list]) => (
-          <div key={station}>
-            <button
-              onClick={() => setCollapsed((c) => ({ ...c, [station]: !c[station] }))}
-              className="w-full flex items-center justify-between py-2 border-b text-left"
-              style={{ borderColor: "var(--border)" }}
-            >
-              <span className="text-xs font-bold uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>
-                {station}
-              </span>
-              <span className="mono text-xs" style={{ color: "var(--text-muted)" }}>
-                {list.length}
-              </span>
-            </button>
-            {!collapsed[station] && (
-              <div className="flex flex-col gap-2 py-2">
-                {list.map((d) => (
-                  <div
-                    key={d.id}
-                    className="rounded-lg border p-3"
-                    style={{ borderColor: "var(--border)", background: "var(--surface)" }}
-                  >
-                    <div className="flex items-center gap-2 flex-wrap font-bold text-sm">
-                      {d.name}
-                      <span className={`pill ${d.category}`}>{CATEGORY_LABEL[d.category]}</span>
-                      {d.safety && <span className="pill safety">Safety</span>}
-                      {d.comm && (
-                        <span className="pill safety" style={{ borderColor: "var(--primary)", color: "var(--primary-dark)" }}>
-                          Comm
-                        </span>
-                      )}
-                    </div>
-                    <div className="mono text-xs mt-1" style={{ color: "var(--text-muted)" }}>
-                      PN: <b style={{ color: "var(--text)" }}>{d.part_number || "—"}</b>
-                      {d.cable_number ? (
-                        <>
-                          {" "}
-                          · Cable: <b style={{ color: "var(--text)" }}>{d.cable_number}</b>
-                        </>
-                      ) : null}
-                      {" "}· I/O: {d.std_in}/{d.std_out} std, {d.safe_in}/{d.safe_out} safety
-                    </div>
-                    <div className="flex gap-4 mt-2 text-xs font-semibold">
-                      {fileUrl(d.datasheet_path) ? (
-                        <a href={fileUrl(d.datasheet_path)!} target="_blank" style={{ color: "var(--primary)" }}>
-                          Datasheet
-                        </a>
-                      ) : (
-                        <span style={{ color: "var(--text-muted)" }}>No datasheet on file</span>
-                      )}
-                      {fileUrl(d.cad_path) ? (
-                        <a href={fileUrl(d.cad_path)!} target="_blank" style={{ color: "var(--primary)" }}>
-                          CAD file
-                        </a>
-                      ) : (
-                        <span style={{ color: "var(--text-muted)" }}>No CAD file on file</span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
+      {searching ? (
+        <>
+          <div className="mono" style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 10 }}>
+            {matches.length} of {parts.length} parts match &ldquo;{search}&rdquo;
           </div>
-        ))}
-      </div>
+          {grouped.map(([brand, list]) => (
+            <BrandGroup
+              key={brand}
+              brand={brand}
+              list={list}
+              usage={usage}
+              collapsed={!!collapsed[brand]}
+              onToggle={() => setCollapsed((c) => ({ ...c, [brand]: !c[brand] }))}
+            />
+          ))}
+          {!matches.length && !loading && (
+            <p style={{ fontSize: 13, color: "var(--text-muted)" }}>
+              No part matches &ldquo;{search}&rdquo;.
+            </p>
+          )}
+        </>
+      ) : (
+        <>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(215px, 1fr))",
+              gap: 12,
+            }}
+          >
+            {FAMILY_ORDER.map((family) => {
+              const category = FAMILY_TO_CATEGORY[family];
+              const n = countFor(category);
+              const brands = brandsFor(category);
+              return (
+                <Link
+                  key={family}
+                  href={`/library/${family}`}
+                  className="flex flex-col"
+                  style={{
+                    background: "var(--surface)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 8,
+                    padding: 14,
+                    gap: 8,
+                  }}
+                >
+                  <div className="flex justify-between items-center">
+                    <span className={`pill ${category}`}>{CATEGORY_LABEL[category]}</span>
+                    <span className="mono" style={{ fontSize: 12, color: "var(--text-muted)" }}>
+                      {n}
+                    </span>
+                  </div>
+                  <div className="display" style={{ fontSize: 16, fontWeight: 700 }}>
+                    {FAMILY_LABEL[family]}
+                  </div>
+                  <div style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.45 }}>
+                    {FAMILY_BLURB[family]}
+                  </div>
+                  <div className="mono" style={{ fontSize: 11, color: "var(--text-muted)" }}>
+                    {n ? `${n} parts${brands ? ` · ${brands}` : ""}` : "nothing catalogued yet"}
+                  </div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "var(--primary)" }}>
+                    {n ? "View parts →" : "Catalog the first one →"}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
 
-      {showForm && (
-        <DeviceForm
-          onCancel={() => setShowForm(false)}
-          onSaved={() => {
-            setShowForm(false);
-            load();
-          }}
-        />
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+              gap: 12,
+              marginTop: 12,
+            }}
+          >
+            <StorageShortcut
+              href="/datasheets"
+              title="Datasheets & Manuals"
+              meta={`${datasheetCount} files · one per part number`}
+            />
+            <StorageShortcut
+              href="/cad"
+              title="CAD Files"
+              meta={`${cadCount} blocks on file · ${parts.length - cadCount} PNs missing`}
+            />
+            <StorageShortcut href="/images" title="Device Images" meta={`${imageCount} symbol files`} />
+          </div>
+        </>
       )}
     </div>
+  );
+}
+
+function StorageShortcut({ href, title, meta }: { href: "/datasheets" | "/cad" | "/images"; title: string; meta: string }) {
+  return (
+    <Link
+      href={href}
+      className="flex justify-between items-center flex-wrap"
+      style={{
+        background: "var(--surface-2)",
+        border: "1px solid var(--border)",
+        borderRadius: 8,
+        padding: 14,
+        gap: 8,
+      }}
+    >
+      <span>
+        <span className="display" style={{ fontSize: 14, fontWeight: 700 }}>
+          {title}
+        </span>
+        <br />
+        <span className="mono" style={{ fontSize: 11, color: "var(--text-muted)" }}>
+          {meta}
+        </span>
+      </span>
+      <span style={{ fontSize: 12, fontWeight: 600, color: "var(--primary)", whiteSpace: "nowrap" }}>
+        Open storage →
+      </span>
+    </Link>
   );
 }

@@ -67,3 +67,18 @@ h1, h2, h3, .display {
 .pill.sensor { color: #0d6b6e; background: #e1f0f1; border-color: #3a93a0; }
 .pill.pneumatic { color: #5a4a86; background: #ece8f4; border-color: #7c6ba6; }
 .pill.safety { color: var(--accent-ink); background: var(--accent-tint); border-color: var(--accent); }
+.pill.robot { color: #2f6b4e; background: #e3f2ea; border-color: #3f8f6b; }
+
+.paneliq-input {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-size: 14px;
+  color: var(--text);
+}
+.paneliq-input:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: -1px;
+  border-color: var(--primary);
+}
