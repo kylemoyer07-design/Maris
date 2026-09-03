@@ -11,6 +11,88 @@ The entry template is at the bottom of this file.
 
 ---
 
+## Session 4 — 2026-09-03 (Claude Code)
+
+**Goal:** Build redesign step 4 — the Catalog New Part modal — and push everything live.
+
+**What changed:**
+
+- **`components/CatalogPartModal.tsx`** (new, ~900 lines): the modal, built section by section
+  against the handoff spec. Part # + brand at 3fr/2fr, the four-way category segment, mechanical
+  info with the PNP/NPN and Light/Dark segmented rows, additional P/N info, controls info with
+  amber safety I/O fields, the device image / symbol picker, datasheet + CAD upload, notes.
+  Writes to `parts`, not `devices`.
+- **Wired into both library pages.** `/library`'s disabled placeholder button is now live;
+  `/library/[family]` gained the same button with its own family pre-selected.
+- **`components/DeviceForm.tsx` deleted.** Nothing imported it and it wrote to the legacy
+  `devices` table.
+- **`eslint.config.mjs`**: `design_handoff_paneliq/**` added to `globalIgnores`.
+- **`.claude/launch.json`** added so the browser preview tool can start the dev server.
+- Commit `53824db` pushed to `main`; Vercel auto-deployed and the modal was confirmed working on
+  `https://paneliq-five.vercel.app`.
+
+**Decisions made:**
+
+- **Blank fields store `NULL`, not `""`.** The prototype defaults an empty brand to
+  `"Unbranded"`; rejected, because `groupByBrand` already renders NULL brands as "Brand not
+  recorded" and all 14 existing parts are NULL. `"Unbranded"` would have opened a second group
+  for the same concept, and the drift would only show up once someone catalogued a part without
+  a brand.
+- **Device images upload on pick, not on save.** `device_images` rows stand on their own and are
+  shared across parts, so they do not need the part id that the datasheet/CAD paths do. They
+  land under an `images/` prefix inside the existing `device-files` bucket rather than a second
+  bucket — the spec explicitly allows either, and one bucket means one set of storage policies
+  to fix when auth lands.
+- **Duplicate part number (unique violation `23505`) gets a written message** — "`<PN>` is
+  already in the library." — and the modal stays open with the form intact. A raw PostgREST
+  error string in front of an engineer cataloguing parts is a dead end.
+- **Cross-family save follows the part.** If a part catalogued from `/library/pneumatic` is
+  categorised as a sensor, the save routes to `/library/electrical`. Leaving someone on a page
+  that structurally cannot show what they just created reads as a failed save.
+- **Deleted `DeviceForm` rather than leaving it parked.** It was the one remaining writer to
+  `devices`. An unused file is harmless; an unused file that writes to the table you are
+  retiring is a trap for whoever wires up a "+ Add" button next.
+- **`operate: "NA"` still renders in the part card spec line** (as "PNP · NA"). Per the spec's
+  data model `NA` is a real value, distinct from "not recorded" — an engineer saying "light/dark
+  operate does not apply here" is information. Flagged to Kyle as a one-line `PartCard` change
+  if he would rather it stayed invisible.
+
+**What broke / surprised us:**
+
+- **`react-hooks/set-state-in-effect` rejected the obvious refactor.** Extracting the data load
+  into a `useCallback` and calling it from the effect is an error under Next 16's lint config,
+  because the linter treats any function containing `setState` as a synchronous setState in the
+  effect body — regardless of the `await` inside it. The fix was to keep the inline `.then()`
+  effect exactly as the hub page has it and add a separate plain `refresh` used only by the
+  modal's `onSaved`. Slight duplication, but the lint rule is right about the general case.
+- **`next-env.d.ts` churns between `next build` and `next dev`** — build points it at
+  `.next/types`, dev at `.next/dev/types`, so whichever ran last dirties the tree. Kept out of
+  the commit. Incidentally it confirms **`typedRoutes` is on**, which is why Session 3 needed
+  the route stubs even though `next.config.ts` never sets the flag.
+- **Deploy verification nearly produced a false negative.** Production chunk paths are
+  `/_next/static/immutable/chunks/`, not `/_next/static/chunks/`, so a grep for the new code in
+  the JS bundles found zero chunks and looked like a failed deploy. The check that actually
+  works is simpler than bundle-grepping: **fetch the prerendered HTML and grep for markup only
+  the new code produces** — here, the enabled button's exact inline styles, which the old
+  disabled version could not have emitted. Absence-based checks ("the old string is gone") are
+  weaker and should not be trusted alone.
+- **The first click on the production modal did nothing** — it landed before hydration finished.
+  Not a bug, but worth knowing before concluding a deployed interaction is broken.
+
+**Open questions / blockers:**
+
+1. **RLS is now the gating item, not a background one.** Steps 5-7 each add new write surfaces
+   (file uploads, job/OP creation, OP device editing) to a database that is still world-writable
+   through the published key. Every step from here makes the exposure larger.
+2. Real part numbers from mechanical's BOM, to replace the 14 `UNCAT-` keys.
+3. Whether `NA` should render in the part card spec line — Kyle's call, one line either way.
+
+**Next step:** build-order step 5 — the real `/datasheets`, `/cad` and `/images` screens, which
+are the same list component over three record sources. Then step 6 (`/jobs` with inline create)
+and step 7 (OP Build), validating step 7 against OP230: 14 devices -> 1 valve bank -> 6 sheets.
+
+---
+
 ## Session 3 — 2026-09-01 (Claude Code)
 
 **Goal:** Implement the Claude Design handoff and get it live on Vercel. Ended up also fixing

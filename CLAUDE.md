@@ -72,7 +72,7 @@ needing extraction was already extracted, and `CLAUDE.md` itself had been delete
 while a handoff described it as current. The Supabase MCP connector works fully, so check the
 database directly rather than quoting a document. Do the same for anything cheap to verify.
 
-## Current state (verified 2026-09-01, Session 2)
+## Current state (verified 2026-09-03, Session 4)
 
 **Repo**: `kylemoyer07-design/Maris` (private). Next.js 16 App Router + TypeScript + Tailwind v4
 + Supabase. `app/`, `lib/`, `components/` sit at the true repo root (the app was once nested
@@ -85,10 +85,22 @@ workflow available — don't plan one, and don't reach for `gh` commands. Work g
 branches exist.
 
 **Local dev environment**: **Node 24.20.0 / npm 11.19.0 are installed** (`/usr/local/bin`,
-official .pkg — no Homebrew, no nvm), and `node_modules` is populated. `npm run build` and
-`npm run dev` both work. **Build locally before every push** — Sessions 1-3 had no compiler and
-it made every change a gamble; that constraint is gone, so there is no excuse for shipping code
-that hasn't been typechecked. Note the shell may need `export PATH="$PATH:/usr/local/bin"`.
+official .pkg — no Homebrew, no nvm), and `node_modules` is populated. `npm run build`,
+`npm run dev` and `npm run lint` all work. **Build and lint locally before every push** —
+Sessions 1-3 had no compiler and it made every change a gamble; that constraint is gone, so there
+is no excuse for shipping code that hasn't been typechecked. Note the shell may need
+`export PATH="$PATH:/usr/local/bin"`.
+
+`npm run lint` is clean except one known warning (`no-page-custom-font` in `app/layout.tsx`, see
+Conventions). `design_handoff_paneliq/` is in the ESLint ignore list — it is a design reference,
+not source, and its 3 errors were the only thing making `lint` unusable. `.claude/launch.json`
+defines the `paneliq` dev server for the browser preview tool; prefer that over running
+`next dev` from a shell.
+
+`next-env.d.ts` flips between `.next/types` (after `next build`) and `.next/dev/types` (after
+`next dev`). It is generated — don't commit the churn. It also confirms **`typedRoutes` is on**
+even though `next.config.ts` never sets the flag, which is why every `<Link>` target has to be a
+real route.
 
 **Vercel**: project `paneliq`, team `Maris` (slug `maris14`, id `team_Xr78UqlEIic7DxOIE5cxV0kx`),
 **hobby plan**.
@@ -111,17 +123,22 @@ that hasn't been typechecked. Note the shell may need `export PATH="$PATH:/usr/l
   This is a **connector scope limitation, not evidence about the project.** Session 3 wrongly
   treated `get_git_deployment_context`'s `linkedProjects: []` as proof that GitHub was
   disconnected; it is not — that field does not report ordinary Git integrations. To check
-  whether a deploy landed, **`curl` the production URL and grep for something the new code
-  contains** — that works, is cheap, and needs nothing from Kyle.
+  whether a deploy landed, **`curl` the production URL and grep the prerendered HTML for markup
+  only the new code could emit** — that works, is cheap, and needs nothing from Kyle. Grep the
+  *HTML*, not the JS bundles: production chunk paths are `/_next/static/immutable/chunks/`, and a
+  wrong-path grep returns zero hits that read exactly like a failed deploy. Prefer a positive
+  marker (new markup present) over an absence check (old string gone).
 
 **Supabase**: project `ohvgevtyklbjwwyfmche` (Kyle's own account, org `iogskoevbliocztjduxf`,
 us-east-2, Postgres 17, ACTIVE_HEALTHY). The Supabase MCP connector **works fully** — reads,
-SQL, and migrations all function. Tables: `devices` (14), `jobs` (1), `ops` (4), `op_devices`
-(16), plus a `device-files` storage bucket holding **0 objects** (no real files uploaded yet).
+SQL, and migrations all function. Tables (counts verified 2026-09-03): `parts` (14),
+`device_images` (0), `devices` (14, legacy), `jobs` (1), `ops` (4), `op_devices` (16), plus a
+`device-files` storage bucket holding **0 objects** (no real files uploaded yet).
 
 **SECURITY — the database is publicly readable and writable right now.** RLS is enabled on all
-four tables with **fully permissive** policies (verified in `pg_policies`: one `ALL` policy per
-table, role `public`, `USING true` / `WITH CHECK true`). The app has no login. The production
+six tables with **fully permissive** policies (re-verified in `pg_policies` on 2026-09-03: one
+`ALL` policy per table — `parts`, `device_images`, `devices`, `jobs`, `ops`, `op_devices` — role
+`public`, `USING true` / `WITH CHECK true`). The app has no login. The production
 site is public, and the Supabase URL and publishable key are hardcoded in `lib/supabase.ts` and
 ship in the browser bundle.
 
@@ -145,18 +162,19 @@ history, do not edit):
 the zip holds nothing extra, so work from the extracted folder. See `SESSION_1_HANDOFF.md` §5
 for the risk list before starting.
 
-## Pages (current, pre-redesign)
+## Pages (current — redesign steps 1-4 done, 5-7 outstanding)
 
 - `/` — landing page with links into the app.
-- `/library` — the shared Hardware Library: every cataloged device, searchable, grouped by
-  station. "+ Catalog New Device" opens a form (category-specific fields) with datasheet/CAD
-  file upload straight to Supabase Storage.
+- `/library` — the Hardware Library hub: 4 family cards + 3 storage shortcuts, with search
+  across all families. "+ Catalog New Part" opens the modal (`components/CatalogPartModal.tsx`).
+- `/library/[family]` — parts in one family, grouped by brand, collapsible, scoped search. Also
+  carries "+ Catalog New Part", pre-selected to that family.
 - `/jobs` — list of jobs and their OPs.
 - `/jobs/[jobId]/ops/[opId]` — the OP build view: pull devices from the shared library into
   this OP (left panel), see live I/O rollup and the estimated controls-sheet count (right panel).
 
-The pending redesign grows this to 7 routes and splits `devices` into a `parts` library +
-per-OP named `op_devices`.
+`/datasheets`, `/cad` and `/images` exist as "Not built yet" stubs (step 5). `/jobs` and OP Build
+are still the pre-redesign versions reading the legacy `devices` table.
 
 ## Data model
 
@@ -204,11 +222,13 @@ Kyle's actual OP230 drawings); OP120 shares 2 of those same devices (Drop Deck C
 #2); OP110 and OP130 exist but have no devices linked yet. Full per-device table is in
 `SESSION_1_HANDOFF.md` §4.
 
-**Every one of the 14 devices has `part_number = "— (mechanical BOM)"` — a literal placeholder,
-identical across all of them.** Real part numbers live in mechanical's BOM and haven't been
-cataloged here yet. The redesign's migration uses `part_number` as a unique join key, so run as
-written it would collapse all 14 into one row. **Unresolved — Kyle's call.** See
-`SESSION_1_HANDOFF.md` §5A.
+**Every one of the 14 `devices` rows still has `part_number = "— (mechanical BOM)"` — a literal
+placeholder, identical across all of them.** That is why the migration could not use
+`part_number` as a join key without collapsing 14 rows into 1. **Resolved in Session 3**, not
+open: each part got a synthetic `UNCAT-<STATION>-<NAME>` key flagged
+`provisional_part_number = true` (Kyle's option b — see "Part numbers are synthetic and flagged"
+above). `SESSION_1_HANDOFF.md` §5A describes this as an open risk; that is historical, this
+section wins. Real numbers from mechanical's BOM are still outstanding as Open item 5.
 
 Not yet built: a `controls_ref` table for per-address I/O detail (valve bank / input module /
 address / signal label) — the app rolls up I/O *counts* per device but doesn't store individual
@@ -248,6 +268,13 @@ summary). Phase 1 estimate only; expected to grow.
   enforce access, not secrecy of the anon key), so this is intentional, not a leak — env vars
   still take precedence. It does mean the RLS permissiveness above is the *actual* access
   control today.
+- **Blank form fields are stored as `NULL`, never `""`.** An empty spec field means "not
+  recorded", and the UI already renders NULL brands as "Brand not recorded". The design
+  prototype's `"Unbranded"` fallback was deliberately not carried over — it would open a second
+  group for the same concept.
+- **Uploads go to the single `device-files` bucket**, keyed by prefix: `<part id>/datasheet-*`
+  and `<part id>/cad-*` for part files, `images/*` for `device_images` symbols. One bucket means
+  one set of storage policies to fix when auth lands.
 - `design_handoff_paneliq/Hardware Library.dc.html` is a **design reference, not code**. It's a
   106KB single file with inline styles, in-memory state, and invented sample data. Recreate the
   documented values in the app's real patterns; never paste its markup into a component.
@@ -257,24 +284,28 @@ summary). Phase 1 estimate only; expected to grow.
 1. **Close the RLS hole** — see the SECURITY note above. The live site is public and the
    database is world-writable through the published key. This outranks feature work; the longer
    the tool is shown to the team, the more real data sits behind an open door. Minimum viable
-   fix is read-only anon policies plus writes gated behind Supabase Auth (item 5).
-2. **Install Node** on Kyle's Mac — blocks all local build/lint/preview verification.
-3. **Finish the redesign.** Build order steps 1-3 are **done** (migration, header + tab bar,
-   `/library` hub + `/library/[family]`). Remaining: the Catalog New Part modal (step 4, which
-   replaces `components/DeviceForm.tsx`), the real `/datasheets` `/cad` `/images` screens
-   (step 5, currently stubs rendering "Not built yet"), `/jobs` with inline create (step 6), and
-   OP Build with the naming flow, steppers and rollups (step 7). Validate step 7's output
-   against OP230: 14 devices -> 1 valve bank -> 6 sheets.
-4. **Rebuild OP Build, then drop `op_devices.device_id`** and the `devices` table once nothing
+   fix is read-only anon policies plus writes gated behind Supabase Auth (item 4).
+2. **Finish the redesign.** Build order steps 1-4 are **done** (migration, header + tab bar,
+   `/library` hub + `/library/[family]`, Catalog New Part modal). Remaining: the real
+   `/datasheets` `/cad` `/images` screens (step 5, currently stubs rendering "Not built yet"),
+   `/jobs` with inline create (step 6), and OP Build with the naming flow, steppers and rollups
+   (step 7). Validate step 7's output against OP230: 14 devices -> 1 valve bank -> 6 sheets.
+
+   Each remaining step adds a new *write* surface — uploads, job/OP creation, OP device editing —
+   to a database that is still world-writable. That is why item 1 outranks them.
+3. **Rebuild OP Build, then drop `op_devices.device_id`** and the `devices` table once nothing
    reads them.
-5. **Real login** (Supabase Auth) + role-based permissions + login/activity audit log. Kyle's
+4. **Real login** (Supabase Auth) + role-based permissions + login/activity audit log. Kyle's
    actual end goal; discussed at length, not started.
-6. **Catalog real part numbers** for the 14 existing devices.
-7. **Sheet-count formula needs widening.** Kyle confirmed 2026-09-01 that `special` and `robot`
+5. **Catalog real part numbers** for the 14 existing devices.
+6. **Sheet-count formula needs widening.** Kyle confirmed 2026-09-01 that `special` and `robot`
    parts **should** feed the sheet count eventually — deferred, not declined. Today the formula
    still counts only `pneumatic` and `sensor`. (The `robot` categorization question is settled:
    see "Categorize by the part" above.)
-8. **Confirm the sheet-count rule generalizes** across jobs — stated as company standard, but
+7. **Confirm the sheet-count rule generalizes** across jobs — stated as company standard, but
    only checked against OP230 so far.
-9. Write RLS policies alongside each new table as it's created, not deferred as a batch — even a
+8. Write RLS policies alongside each new table as it's created, not deferred as a batch — even a
    deliberately permissive one, written explicitly, keeps the posture visible.
+9. **Should `operate: "NA"` show in the part card spec line?** It currently renders (as
+   "PNP · NA"), because the spec treats `NA` as a real value distinct from "not recorded". Kyle's
+   call; a one-line `PartCard` change either way.
